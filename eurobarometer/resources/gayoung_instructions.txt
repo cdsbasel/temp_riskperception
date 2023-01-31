@@ -1,0 +1,27 @@
+Explanations on folders and code in the eurobarometer/resources folder. 
+
+
+Current project only contains variables and waves from important issues trends. other trends need to be added.
+
+
+Folders:
+
+- code
+	code from gayoung to make various datasets explained below, clean codebook etc.. please make sure that file path is correct before running. 
+
+- codebook
+	codebook_all: contains all variables from the waves specified in description/issue_items. uncomplete. 
+	codebook_filtered: contains issues variables and some other variables. need to be checked manually - uncomplete.
+
+- datasets
+	all waves in description/issue_items, downloaded from gesis. this waves are pertained to the waves listed in the issue_items, so waves or other trends must be downloaded.
+
+- description
+	resources downloaded from gesis eurobarometer website.
+
+- trend_data
+	excel sheets on trends from eurobarometer (https://europa.eu/eurobarometer/about/other). 
+
+
+
+

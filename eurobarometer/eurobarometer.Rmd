@@ -1,0 +1,209 @@
+---
+title: "Analyis of Eurobarometer's Serial Cross-Sectional Trends Survey: Important Issues Personal (DE)"
+output: html_document
+date: "2023-01-31"
+---
+
+
+```{r setup, include=FALSE}
+library(readxl)
+library(lubridate)
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(lme4)
+```
+
+Read in data: **Important Issues Personal (DE)**
+
+https://europa.eu/eurobarometer/about/other
+
+```{r}
+# read in data
+data <- read_excel("data/eurobarometer_data.xlsx", sheet = "import_issues_pers_de")
+```
+
+Wrangle data 
+```{r}
+# pivot data to long format
+data <- pivot_longer(data, cols= 5:23, values_to="value", names_to="issues")
+
+# delete NAs, create a numeric wave variable
+data <- data %>% 
+  filter(!is.na(value))
+  
+# multiply 100 to values
+data$value <- data$value*100
+
+# select risks that have been measured at least twice
+selection<-data %>% 
+  group_by(issues) %>% 
+  summarize(n_waves=n()) %>% 
+  ungroup()
+
+data<-left_join(data,selection,by="issues") %>% 
+  filter(n_waves>2)
+
+```
+
+Create base plot 
+
+```{r, warning=FALSE}
+y_max <- max(data$value)+10
+
+# plot time course of risk perception
+ggplot(data = data, mapping = aes(x = wave, y = value, cluster = issues)) + 
+  geom_line(color="grey") +
+  ylim(c(-10,y_max)) +
+  xlab("Wave") + 
+  ylab("Important Issue Personal (% DE Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none")
+   
+ggsave("base.jpg")
+```
+
+Base plot + 1 highlight... 
+
+```{r, warning=FALSE}
+
+data_sel<- data %>% 
+  filter(issues=="inflation")
+  
+data_label<- data %>% 
+  filter(issues=="inflation") %>% 
+  filter(wave == max(wave))
+
+# plot time course of risk perception
+ggplot(data = data, aes(x = wave, y = value, cluster = issues)) + 
+  geom_line(color="grey") +
+  ylim(c(-10,y_max)) +
+  xlab("Wave") + 
+  ylab("Important Issue Personal (% DE Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_line(data=data_sel,mapping=aes(x = wave, y = value),color="skyblue",linewidth=2) +
+  geom_text(data=data_label,size=4.5,mapping=aes(label=issues,
+                                        x = wave, 
+                                        y = value),color="skyblue",lwd=2,hjust=0) 
+
+ggsave("highlight1.jpg")
+```
+
+Base plot + 1 highlight... 
+
+```{r, warning=FALSE}
+
+data_sel<- data %>% 
+  filter(issues=="crime")
+  
+data_label<- data %>% 
+  filter(issues=="crime") %>% 
+  filter(wave==max(wave))
+
+# plot time course of risk perception
+ggplot(data = data, aes(x = wave, y = value, cluster = issues)) + 
+  geom_line(color="grey") +
+  ylim(c(-10,y_max)) +
+  xlab("Wave") + 
+  ylab("Important Issue Personal (% DE Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_line(data=data_sel,mapping=aes(x = wave, y = value),color="orange",linewidth=2) +
+  geom_text(data=data_label,size=4.5,mapping=aes(label=issues,
+                                        x = wave, 
+                                        y = value),color="orange",lwd=2,hjust=0) 
+
+ggsave("highlight2.jpg")
+```
+
+
+Base plot + 2 highlights... 
+
+```{r, warning=FALSE}
+
+data_sel<- data %>% 
+  filter(issues=="living_cond" | issues=="work_cond")
+  
+data_label<- data %>% 
+  filter(issues=="living_cond" | issues=="work_cond") %>% 
+  group_by(issues) %>% 
+  filter(wave==max(wave)) %>% 
+  ungroup()
+
+# plot time course of risk perception
+ggplot(data = data, aes(x = wave, y = value, cluster = issues)) + 
+  geom_line(color="grey") +
+  ylim(c(-10,y_max)) +
+  xlab("Wave") + 
+  ylab("Important Issue Personal (% DE Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+#   scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), 
+#                                                 format = "%Y-%m-%d %H:%M"))) +
+  geom_line(data=data_sel,mapping=aes(x = wave, y = value),color="brown",linewidth=2) +
+  geom_text(data = data_label, size = 4.5, mapping = aes(label = issues, x = wave, y = value), color = "brown", lwd = 2, hjust = 0) 
+
+ggsave("highlight3.jpg")
+```
+
+Plot all risks with labels
+```{r, warning=FALSE}
+
+# create selected set of points for annotation
+data_sel<-data %>% 
+  group_by(issues) %>% 
+  summarize(wave=max(wave)) %>% 
+  ungroup() %>% 
+  mutate(final=1)
+
+data_sel<-left_join(data_sel,data,by=c("issues","wave")) %>% 
+  filter(!is.na(final)) 
+
+# plot time course of risk perception
+ggplot(data = data, mapping = aes(x = wave, y = value, cluster = issues, color=issues)) + 
+  #geom_point() + 
+  geom_line() +
+  ylim(c(-10,y_max)) +
+  xlab("Wave") + 
+  ylab("Important Issue Personal (% DE Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_text_repel(data = data_sel , 
+             aes(label = issues,alpha=.5), color = "black",
+             box.padding = 0.5, max.overlaps = Inf) 
+#  scale_x_datetime(limits = as.POSIXct(strptime(c("2013-01-01 12:00","2025-01-01 12:00"), format = "%Y-%m-%d %H:%M"))) +
+
+   
+ggsave("all_annotations.jpg")
+```
+
+
+```{r, warning=FALSE}
+
+model=lmer(value~1+(1|issues),data=data) # unconditional means model 
+summary(model)
+performance::icc(model) # icc: should be equivalent to 309.27 / (309.27+69.87)
+
+```
+
+```{r, warning=FALSE}
+
+summary_data<-data %>% 
+  group_by(issues) %>% 
+  summarize(value=mean(value)) %>% 
+  ungroup()
+
+summary_data<-summary_data %>% 
+  mutate(issues=fct_reorder(issues, value, min))
+
+ggplot(data = summary_data, mapping = aes(x = value, y = issues)) + 
+  geom_point(shape=23,fill="orange", color="orange",size=3) +
+  theme_minimal() +
+  geom_point(data=data,mapping = aes(x = value, y = issues),shape="|",alpha=.4,size=2) +
+  xlab("Important Issue Personal (% DE Sample)") + 
+  ylab("") +
+  theme(axis.text.x = element_text(size=12),axis.text.y = element_text(size=12))
+
+ggsave("risks_ordered.jpg")
+```
