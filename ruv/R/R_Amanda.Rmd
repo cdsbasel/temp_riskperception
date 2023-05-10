@@ -1,0 +1,162 @@
+---
+title: "R Amanda"
+output: html_document
+date: "2023-05-10"
+---
+
+```{r setup, include=FALSE}
+library(readxl)
+library(lubridate)
+library(tidyverse)
+library(ggplot2)
+library(ggrepel)
+library(lme4)
+library(tidyr)
+library(dplyr)
+```
+
+
+reading in data
+```{r}
+data <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/ruv_risks.xlsx", sheet = "data")
+dates <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/ruv_risks.xlsx", sheet = "dates")
+
+data_in <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/inflation.xlsx", sheet = "year")
+```
+
+
+```{r}
+class(data_in$Verbraucherpreisindex)
+```
+
+
+```{r}
+
+data_in <- subset(data_in, select = -c(2, 4:6))
+
+df_wide <- pivot_wider(data_in, names_from = wave, values_from = Verbraucherpreisindex)
+
+# add new column using $
+df_wide$risk_de <- "Verbraucherpreisindex"
+
+
+```
+
+
+```{r}
+# combine data frames using rbind()
+data <- rbind(data, df_wide)
+
+```
+
+
+Wrangle data 
+```{r}
+# pivot data to long format
+data <- pivot_longer(data, cols= 2:32,values_to="value",names_to="wave")
+ 
+# merge data with date information
+data <- left_join(data, dates, by = "wave")
+
+# delete NAs, create a numeric wave variable, rename risk_de to risk, and transform txt variables into factors
+data <- data %>% 
+  filter(!is.na(value)) %>% 
+  mutate(wave_num=parse_number(wave)) %>% 
+  rename(risk = risk_de) %>% 
+  mutate(risk = factor(risk))
+  
+  #mutate(wave = factor(wave)) %>% 
+  #mutate(food = factor(food))
+
+# select risks that have been measured at least twice
+selection <- data %>% 
+  group_by(risk) %>% 
+  summarize(n_waves=n()) %>% 
+  ungroup()
+
+data <- left_join(data,selection, by="risk") %>% 
+  filter(n_waves > 2)
+
+
+```
+
+
+
+```{r}
+
+
+# plot time course of risk perception
+ggplot(data = data, mapping = aes(x = year, y = value, cluster = risk)) + 
+  geom_line(color="grey") +
+  ylim(c(0,100)) +
+  xlab("Year") + 
+  ylab("High Risk (% Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none")
+
+  #scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), format = "%Y-%m-%d %H:%M"))) 
+```
+
+```{r}
+
+data_sel<- data %>% 
+  filter(risk == "Verbraucherpreisindex")
+  
+data_label<- data %>% 
+  filter(risk == "Verbraucherpreisindex") %>% 
+  filter(year == max(year))
+
+# plot time course of risk perception
+ggplot(data = data, aes(x = year, y = value, cluster = risk)) + 
+  geom_line(color="grey") +
+  ylim(c(0,100)) +
+  xlab("Year") + 
+  ylab("High Risk (% Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_line(data=data_sel,mapping=aes(x = year, y = value),color="orange",linewidth=2) +
+  geom_text(data=data_label,size=4.5,mapping=aes(label=risk,
+                                        x = year, 
+                                        y = value),color="orange",lwd=1.5,hjust=1, vjust = 0, nudge_y = 40) 
+
+  #scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), format = "%Y-%m-%d %H:%M")))
+
+```
+
+
+```{r}
+df <- subset(data, risk == c("Verbraucherpreisindex", "steigende Lebenshaltungskosten"))
+
+df_a <- subset(data, risk == "Verbraucherpreisindex")
+df_c <- subset(data, risk == "steigende Lebenshaltungskosten")
+```
+
+
+```{r}
+corr<- cor(df_a$value, df_c$value)
+```
+
+```{r}
+ggplot(df, aes(x = year, y = value, color = risk)) +
+  geom_point()
+```
+
+
+```{r}
+p <- ggplot(df, aes(x = year, y = value, color = risk)) +
+  geom_point()
+
+# Korrelationslinie hinzufügen
+p + geom_smooth(data = df_a, aes(x = year, y = value), method = "lm", se = FALSE, color = "red") +
+    geom_smooth(data = df_c, aes(x = year, y = value), method = "lm", se = FALSE, color = "blue") +
+  ggtitle(paste("Korrelation zwischen A und C: ", round(corr, 3)))
+```
+
+```{r}
+ggplot(df, aes(x = year, y = value, color = risk)) +
+  geom_point() +
+  geom_smooth(data = df, aes(x = year, y = ifelse(risk == "Verbraucherpreisindex", value, NA)), method = "lm", se = FALSE, color = "red") +
+  geom_smooth(data = df, aes(x = year, y = ifelse(risk == "steigende Lebenshaltungskosten", value, NA)), method = "lm", se = FALSE, color = "blue") +
+  ggtitle(paste("Korrelation zwischen Verbraucherpreisindex und steigende Lebenshaltungskosten: ", round(corr, 3)))
+```
+

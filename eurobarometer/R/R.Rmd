@@ -15,7 +15,9 @@ library(lme4)
 
 ```{r}
 # Read Excel files
-file1 <- read_excel("data/eurobarometer_data.xlsx", sheet = "import_issues_pers_de")  
+file1 <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/eurobarometer/data/eurobarometer_data.xlsx", sheet = "import_issues_pers_de")  
+
+
 file2 <- read_excel("data/inflation.xlsx",sheet = "month")
 ```
 
