@@ -22,30 +22,42 @@ data <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskpercept
 dates <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/ruv_risks.xlsx", sheet = "dates")
 
 data_in <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/inflation.xlsx", sheet = "year")
+
+data_a <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperception/ruv/data/unemployment.xlsx", sheet = "A")
 ```
 
 
 ```{r}
-class(data_in$inflation)
+class(data_a$unemployment)
 ```
 
 
+Wrangle data from inflation
 ```{r}
-
 data_in <- subset(data_in, select = -c(2:4,6))
 
 df_wide <- pivot_wider(data_in, names_from = wave, values_from = inflation)
 
 # add new column using $
 df_wide$risk_de <- "inflation"
+```
 
+wrangle data from unemployment
+```{r}
+data_a <- subset(data_a, select = -2)
+
+df_widea <- pivot_wider(data_a, names_from = wave, values_from = unemployment)
+
+# add new column using $
+df_widea$risk_de <- "unemployment"
 
 ```
 
-
+combine all the data
 ```{r}
 # combine data frames using rbind()
 data <- rbind(data, df_wide)
+data <- rbind(data, df_widea)
 
 ```
 
@@ -81,7 +93,7 @@ data$value <- ave(data$value, data$risk, FUN = function(x) scale(x))
 ```
 
 
-
+Plot the data: First Plot 
 ```{r}
 
 
@@ -97,6 +109,8 @@ ggplot(data = data, mapping = aes(x = year, y = value, cluster = risk)) +
   #scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), format = "%Y-%m-%d %H:%M"))) 
 ```
 
+
+Show inflation line
 ```{r}
 
 data_sel<- data %>% 
@@ -124,12 +138,82 @@ ggplot(data = data, aes(x = year, y = value, cluster = risk)) +
 ```
 
 
+show unemployment line 
+```{r}
+
+data_sol<- data %>% 
+  filter(risk == "unemployment")
+  
+data_label<- data %>% 
+  filter(risk == "unemployment") %>% 
+  filter(year == max(year))
+
+# plot time course of risk perception
+ggplot(data = data, aes(x = year, y = value, cluster = risk)) + 
+  geom_line(color="grey") +
+  ylim(c(-3,3)) +
+  xlab("Year") + 
+  ylab("High Risk (% Sample)") + 
+  theme_minimal() +
+  theme(legend.position = "none") +
+  geom_line(data=data_sol,mapping=aes(x = year, y = value),color="orange",linewidth=2) +
+  geom_text(data=data_label,size=4.5,mapping=aes(label=risk,
+                                        x = year, 
+                                        y = value),color="orange",lwd=1.5,hjust=1, vjust = 0, nudge_y = 40) 
+
+  #scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), format = "%Y-%m-%d %H:%M")))
+
+```
+
+
+Define data for correlation 
 ```{r}
 df <- subset(data, risk == c("inflation", "steigende Lebenshaltungskosten"))
 
 df_a <- subset(data, risk == "inflation")
 df_c <- subset(data, risk == "steigende Lebenshaltungskosten")
+df_d <- subset(data, risk == "unemployment")
 ```
+
+
+Plot an correlation of inflation and steigende Lebenshaltungskosten
+```{r}
+B <- ggplot(data = NULL, aes(x = df_c$value, y = df_a$value)) +
+  geom_point() +
+  xlab("steigende Lebenshaltungskosten") +
+  ylab("inflation") +
+  ggtitle("correlation") +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  theme_minimal()
+
+# Add a legend
+B <- B + labs(color = "Risk")
+
+# Display the plot
+print(B)
+```
+
+Plot an correlation of unemployment and steigende Lebenshaltungskosten. Does not work yet because of diffrent lenght
+```{r}
+df_c2 <- df_c[-c(1:12), ]
+
+
+C <- ggplot(data = NULL, aes(x = df_c2$value, y = df_d$value)) +
+  geom_point() +
+  xlab("steigende Lebenshaltungskosten") +
+  ylab("unemployment") +
+  ggtitle("correlation") +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  theme_minimal()
+
+# Add a legend
+C <- C + labs(color = "Risk")
+
+# Display the plot
+print(C)
+```
+
+
 
 
 ```{r}
@@ -174,5 +258,34 @@ p <- ggplot(df, aes(x = year, y = value, color = risk)) +
 # Korrelationslinie hinzufügen
 p + geom_smooth(data = df, aes(x = year, y = value), method = "lm", se = FALSE, color = "red") +
   ggtitle(paste("correlation between inlation and increasing living cost: ", round(corr, 3)))
+```
+
+
+Plot lagged correlation... code is from a website. It still needs adjusting. 
+```{r}
+# Calculate lagged variables
+lag_years <- c(1, 2, 3)  # Specify the lagged years of interest
+
+df_lagged <- df %>%
+  mutate(
+    inflation_lagged = lag(inflation, n = lag_years),
+    perceived_risk_lagged = lag(perceived_risk, n = lag_years)
+  ) %>%
+  filter(!is.na(inflation_lagged) & !is.na(perceived_risk_lagged))
+
+# Create a scatter plot with correlations
+B <- ggplot(data = df_lagged, aes(x = perceived_risk_lagged, y = inflation_lagged)) +
+  geom_point() +
+  xlab("Perceived Risk (lagged)") +
+  ylab("Actual Inflation (lagged)") +
+  ggtitle("Correlation between Perceived Risk and Actual Inflation") +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  theme_minimal()
+
+# Add a legend
+B <- B + labs(color = "Risk")
+
+# Display the plot
+print(B)
 ```
 
