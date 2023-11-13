@@ -27,11 +27,6 @@ data_a <- read_excel("C:/Users/holze/Documents/Temporal stability/temp_riskperce
 ```
 
 
-```{r}
-class(data_a$unemployment)
-```
-
-
 Wrangle data from inflation
 ```{r}
 data_in <- subset(data_in, select = -c(2:4,6))
@@ -120,18 +115,29 @@ data_label<- data %>%
   filter(risk == "inflation") %>% 
   filter(year == max(year))
 
+data_sel1<- data %>% 
+  filter(risk == "steigende Lebenshaltungskosten")
+  
+data_label1<- data %>% 
+  filter(risk == "steigende Lebenshaltungskosten") %>% 
+  filter(year == max(year))
+
 # plot time course of risk perception
 ggplot(data = data, aes(x = year, y = value, cluster = risk)) + 
   geom_line(color="grey") +
   ylim(c(-3,3)) +
   xlab("Year") + 
-  ylab("High Risk (% Sample)") + 
+  ylab("Percentage (z-standardized)") + 
   theme_minimal() +
   theme(legend.position = "none") +
   geom_line(data=data_sel,mapping=aes(x = year, y = value),color="orange",linewidth=2) +
   geom_text(data=data_label,size=4.5,mapping=aes(label=risk,
                                         x = year, 
-                                        y = value),color="orange",lwd=1.5,hjust=1, vjust = 0, nudge_y = 40) 
+                                        y = value),color="orange",lwd=1.5,hjust=1, vjust = 0, nudge_y = 40)+
+  geom_line(data=data_sel1,mapping=aes(x = year, y = value),color="blue",linewidth=2) +
+  geom_text(data=data_label1,size=4.5,mapping=aes(label=risk,
+                                        x = year, 
+                                        y = value),color="blue",lwd=1.5,hjust=1, vjust = 0, nudge_y = 40) 
 
   #scale_x_datetime(limits = as.POSIXct(strptime(c("2014-01-01 12:00","2025-12-01 12:00"), format = "%Y-%m-%d %H:%M")))
 
@@ -182,12 +188,11 @@ B <- ggplot(data = NULL, aes(x = df_c$value, y = df_a$value)) +
   geom_point() +
   xlab("steigende Lebenshaltungskosten") +
   ylab("inflation") +
-  ggtitle("correlation") +
-  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  geom_smooth(method = "lm", se = FALSE, color = "black") +
   theme_minimal()
 
 # Add a legend
-B <- B + labs(color = "Risk")
+B <- B + labs(color = "Risk") + coord_equal()
 
 # Display the plot
 print(B)
@@ -222,7 +227,8 @@ corr<- cor(df_a$value, df_c$value)
 
 ```{r}
 ggplot(df, aes(x = year, y = value, color = risk)) +
-  geom_point()
+  geom_point()+
+  theme_minimal()
 ```
 
 Correlation in group 
@@ -233,7 +239,8 @@ p <- ggplot(df, aes(x = year, y = value, color = risk)) +
 # Korrelationslinie hinzufügen
 p + geom_smooth(data = df_a, aes(x = year, y = value), method = "lm", se = FALSE, color = "red") +
     geom_smooth(data = df_c, aes(x = year, y = value), method = "lm", se = FALSE, color = "blue") +
-  ggtitle(paste("Korrelation zwischen A und C: ", round(corr, 3)))
+  ggtitle(paste("Korrelation zwischen A und C: ", round(corr, 3)))+
+  theme_minimal()
 ```
 
 
@@ -261,31 +268,87 @@ p + geom_smooth(data = df, aes(x = year, y = value), method = "lm", se = FALSE, 
 ```
 
 
-Plot lagged correlation... code is from a website. It still needs adjusting. 
+Correlate all the data with inflation 
 ```{r}
-# Calculate lagged variables
-lag_years <- c(1, 2, 3)  # Specify the lagged years of interest
+# Define the list of risks
+risks <- c("Drogensucht der eigenen Kinder", 
+"höhere Arbeitslosigkeit in Deutschland",
+"Krieg mit deutscher Beteiligung",
+"schlechtere Wirtschaftslage",
+"Überforderung der Politiker",
+"Terrorismus",
+"Naturkatastrophen/Wetterextreme",
+"Klimawandel",
+"Schadstoffe in Nahrungsmitteln",
+"Kosten für Steuerzahler durch EU-Schuldenkrise",
+"Gefährdung des Euro durch EU-Schuldenkrise",
+"Überforderung des Staates durch Geflüchtete",
+"politischer Extremismus",
+"gefährlichere Welt durch Trump-Politik",
+"Wohnen in Deutschland unbezahlbar",
+"Steuererhöhungen/Leistungskürzungen durch Corona",
+"Weltweit autoritäre Herrscher immer mächtiger",
+"Störfällen in Atomkraftwerken",
+"Hinterherhinken bei Digitalisierung",
+"Zerbrechen der Partnerschaft",
+"häufiger Pandemien durch Globalisierung",
+"fehlender Bürgernähe der Politiker"
+)
 
-df_lagged <- df %>%
-  mutate(
-    inflation_lagged = lag(inflation, n = lag_years),
-    perceived_risk_lagged = lag(perceived_risk, n = lag_years)
-  ) %>%
-  filter(!is.na(inflation_lagged) & !is.na(perceived_risk_lagged))
+# Initialize the correlation data frame
+correlation_data <- data.frame(risk = character(), correlation = numeric())
 
-# Create a scatter plot with correlations
-B <- ggplot(data = df_lagged, aes(x = perceived_risk_lagged, y = inflation_lagged)) +
+# Loop through the risks
+for (risk in risks) {
+  # Subset the data for the current risk
+  risk_data <- data[data$risk == risk, ]
+  
+  # Find the overlapping waves between inflation and the current risk
+  common_waves <- intersect(inflation$wave, risk_data$wave)
+  
+  # Subset the data for the common waves
+  inflation_common <- inflation[inflation$wave %in% common_waves, ]
+  risk_common <- risk_data[risk_data$wave %in% common_waves, ]
+  
+  # Perform correlation
+  correlation <- cor(inflation_common$value, risk_common$value)
+  
+  # Add the correlation result to the data frame
+  correlation_data <- rbind(correlation_df, data.frame(risk = risk, correlation = correlation))
+}
+
+# Print the correlation data frame
+print(correlation_data)
+
+```
+
+
+
+
+
+```{r}
+correlation_data <- correlation_data[-c(24), ]
+```
+
+
+```{r}
+# Calculate the median correlation
+median_correlation <- median(correlation_data$correlation)
+
+# Sort the correlation data frame by correlation values in descending order
+correlation_data <- correlation_data[order(-correlation_data$correlation), ]
+
+# Create the plot
+plot <- ggplot(correlation_data, aes(x = correlation, y = reorder(risk, correlation))) +
   geom_point() +
-  xlab("Perceived Risk (lagged)") +
-  ylab("Actual Inflation (lagged)") +
-  ggtitle("Correlation between Perceived Risk and Actual Inflation") +
-  geom_smooth(method = "lm", se = FALSE, color = "blue") +
-  theme_minimal()
-
-# Add a legend
-B <- B + labs(color = "Risk")
+  geom_vline(xintercept = median_correlation, linetype = "dashed", color = "red") +
+  geom_vline(xintercept = 0, linetype = "dotted", color = "black") +
+  geom_text(aes(label = ""), hjust = 1.2) +
+  labs(x = "Correlation", y = "Risk") +
+  ggtitle("Correlation with Inflation") +
+  theme_bw()
 
 # Display the plot
-print(B)
+print(plot)
 ```
 
