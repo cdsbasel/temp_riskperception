@@ -1,0 +1,35 @@
+new,old
+risk,risk formulation variable 
+measured,how was it measured? variable 
+units_assessed,In what units is it assessed?  variable 
+how_computed,How was it computed? variable 
+times_measured,How many times was it measured? variable 
+study,Study variable 
+intervention,intervention variable 
+intervention_times,How many times was the intervention? variable 
+intervention_duration,How long was the duration of the intervention? variable 
+intervention_interval,How long was the average interval between interventions? variable 
+exposure,exposure variable 
+exposure_times,How many times was the exposure? variable 
+exposure_duration,How long was the duration of the exposure? variable 
+exposure_interval,How long was the average interval between exposures? variable 
+temporal_analysis,temporal stability analyzed variable 
+how_analyzed,how was it analyzed variable 
+test-retest_result,test-retest stability result variable 
+temporal_trend_result,temporal trend result variable 
+mean_difference_result,mean difference result variable 
+comparison_significant,which comparison was significant variable 
+test-retest_interval,test-retest time interval  variable 
+temporal_trend_interval,temporal trend time interval variable 
+mean_difference_interval,mean difference time interval  variable 
+type_participants,type of participants variable 
+characteristics_sample,characteristics of sample variable 
+age_category,main age category variable 
+country,(main) country of participants variable 
+sample_size,number of participants variable 
+prop_female,prop. of female participants/average variable 
+mean_age,mean age of participants variable 
+SE_age,SE of the age of participants  variable 
+SD_age,SD of the age of participants variable
+lowest_age,lowest age of participants variable
+highest_age,highest age of participants variable
