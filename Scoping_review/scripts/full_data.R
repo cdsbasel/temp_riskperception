@@ -1,6 +1,5 @@
 ###last author: Arzie 
-### last date: 13.11.23
-
+### last date: 14.11.23
 
 #####Prep ------------------
 #load packages 
@@ -51,6 +50,8 @@ for (x in 1:length(new_name_list)) {
 #check the column new names
 names(df_rename)
 
+
+#rename the rest of the columns
 df_rename <- df_rename %>%
   rename(
     covidence_number = `Covidence #`,
@@ -60,7 +61,7 @@ df_rename <- df_rename %>%
     author = `Last name of the first author`,
     paper_title = `Title of the paper`,
     publication_year = `Year when article was published`,
-    aim_of_study = `Aim of study`,
+    aim_study = `Aim of study`,
     data_availability = `Data availability (osf, panel, etc.)`,
     study_design = `What type of design was used?`,
     domain = "What domain is being analyzed?",
@@ -68,27 +69,60 @@ df_rename <- df_rename %>%
     to_be_deleted_2 = ":...223",
     to_be_deleted_3 = ":...359")
 
+#check if step above worked
 names(df_rename)
 
-
-####remove columns ------------------ 
-# Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name
-columns_to_remove <- c(grep("_[6-9]|_1[0-5]$", names(df_rename)), 
-                       grep("^SE_age_[1-9]|^SE_age_1[0-5]$", names(df_rename)),
-                       which(names(df_rename) %in% c("to_be_deleted_1", "to_be_deleted_2",
-                                                     "to_be_deleted_3", "covidence_number", "reviewer_name")))
-
-# Remove the identified columns
-df_rename <- df_rename[, -columns_to_remove]
 
 # Write the data frame to a CSV file
 write.csv(df_rename, file = "Scoping_review/data/secondary/df_rename.csv")
 
 
+####edit columns ------------------ 
+
+# Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name, study id and covidence created title
+columns_to_remove <- c(grep("_[6-9]|_1[0-5]$", names(df_rename)), 
+                       grep("^SE_age_[1-9]|^SE_age_1[0-5]$", names(df_rename)),
+                       grep("^intervention_interval_[1-9]|^intervention_interval_[0-5]$", names(df_rename)),
+                       grep("^intervention_duration_[1-9]|^intervention_duration_[0-5]$", names(df_rename)),
+                       grep("^exposure_interval_[1-9]|^exposure_interval_[0-5]$", names(df_rename)),
+                       grep("^exposure_duration_[1-9]|^exposure_duration_[0-5]$", names(df_rename)),
+                       which(names(df_rename) %in% c("to_be_deleted_1", "to_be_deleted_2",
+                                                     "to_be_deleted_3", "covidence_number",
+                                                     "reviewer_name", "study_id", "title")))
+##not sure if we should remove intevention_duration_intervention_interval, exposure_duration, exposure_interval???????????
+
+# Remove the identified columns
+df_edit <- df_rename[, -columns_to_remove]
 
 
+#add missing values in "author", "title", "publication_year"
+df_edit [5, 1] <- "Malnar"
+df_edit [159, 2] <- "Burnout among hospital staff during the COVID-19 pandemic: Longitudinal results from the international Cope-Corona survey study"
+df_edit [119, 3] <- 2021
+
+###aim of study was missing for the following papers. This was originally extracted but not selected in consensus.
+### add it in df_edit
+#30Yarahmandi: This study aimed to develop and validate Health Care Workers’ Concerns in Infectious Outbreaks Scale (HCWCIOS)
+df_edit [30, 4] <- "This study aimed to develop and validate Health Care Workers’ Concerns in Infectious Outbreaks Scale (HCWCIOS)"
+
+#59 Martin: The present study explores the change sensitivity of the two constructs of worry and risk perception, and how the two constructs are differentially associated with objective risk factors such as family history of dementia.
+df_edit [59, 4] <- "The present study explores the change sensitivity of the two constructs of worry and risk perception, and how the two constructs are differentially associated with objective risk factors such as family history of dementia."
 
 
+#78 van Genderer: the aim to study trends in KAP of travel risk groups toward prevention of hepatitis A.
+df_edit [78, 4] <- "the aim to study trends in KAP of travel risk groups toward prevention of hepatitis A."
+
+#186 Kang: This study investigated the reliability and validity of the Korean version of the Penn State Worry Questionnaire for Children (PSWQ-CK).
+df_edit [186, 4] <- "This study investigated the reliability and validity of the Korean version of the Penn State Worry Questionnaire for Children (PSWQ-CK)."
+
+
+#convert all character columns to lowercase, excluding "author" and "title"
+df_edit <- df_edit %>%
+  mutate(across(where(is.character) & !matches(c("author", "title")), tolower))
+
+
+# Write the data frame to a CSV file
+write.csv(df_edit, file = "Scoping_review/data/secondary/df_edit.csv")
 
 
 
