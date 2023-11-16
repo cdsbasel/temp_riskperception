@@ -124,5 +124,36 @@ df_edit <- df_edit %>%
 # Write the data frame to a CSV file
 write.csv(df_edit, file = "Scoping_review/data/secondary/df_edit.csv")
 
+#add the names of author
+df$`Last name of the first author`[is.na(df$`Last name of the first author`) & df$`Covidence #` == "1468"] <- "Malnar"
 
+#add study ID
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "170"] <- "Zhou 2022"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "609"] <- "Shiloh 2022"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "420"] <- "Shadur 2021"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "192"] <- "Nie 2022"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "114"] <- "Fu 2023"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "67"] <- "Qin 2022"
+df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "37"] <- "Xin 2022"
 
+#add title
+df$`Title of the paper`[is.na(df$`Title of the paper`) & df$`Covidence #` == "190"] <- "Burnout among hospital staff during the COVID-19 pandemic: Longitudinal results from the international Cope-Corona survey study"
+
+#add date
+df$`Year when article was published`[is.na(df$`Year when article was published`) & df$`Covidence #` == "298"] <- 2021
+
+#add aim of study
+df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "698"] <- "to develop and validate a new multidimensional test useful in assessing the process of worrying as well as specific content and physical/somatic symptoms of the worry construct in college undergraduates"
+
+df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "501"] <- "the aim to study trends in kap of travel risk groups toward prevention of hepatitis a."
+
+df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "430"] <- "the present study explores the change sensitivity of the two constructs of worry and risk perception, and how the two constructs are differentially associated with objective risk factors such as family history of dementia."
+
+df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "132"] <- "this study investigated the reliability and validity of the korean version of the penn state worry questionnaire for children (pswq-ck)."
+
+#add design
+df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "230"] <- "serial-cross sectional"
+
+df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "534"] <- "longitudinal"
+
+df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "86"] <- "longitudinal"
