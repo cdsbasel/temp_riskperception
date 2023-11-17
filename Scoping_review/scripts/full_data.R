@@ -124,36 +124,71 @@ df_edit <- df_edit %>%
 # Write the data frame to a CSV file
 write.csv(df_edit, file = "Scoping_review/data/secondary/df_edit.csv")
 
-#add the names of author
-df$`Last name of the first author`[is.na(df$`Last name of the first author`) & df$`Covidence #` == "1468"] <- "Malnar"
-
-#add study ID
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "170"] <- "Zhou 2022"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "609"] <- "Shiloh 2022"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "420"] <- "Shadur 2021"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "192"] <- "Nie 2022"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "114"] <- "Fu 2023"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "67"] <- "Qin 2022"
-df$`Study ID`[is.na(df$`Study ID`) & df$`Covidence #` == "37"] <- "Xin 2022"
-
-#add title
-df$`Title of the paper`[is.na(df$`Title of the paper`) & df$`Covidence #` == "190"] <- "Burnout among hospital staff during the COVID-19 pandemic: Longitudinal results from the international Cope-Corona survey study"
-
-#add date
-df$`Year when article was published`[is.na(df$`Year when article was published`) & df$`Covidence #` == "298"] <- 2021
-
-#add aim of study
-df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "698"] <- "to develop and validate a new multidimensional test useful in assessing the process of worrying as well as specific content and physical/somatic symptoms of the worry construct in college undergraduates"
-
-df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "501"] <- "the aim to study trends in kap of travel risk groups toward prevention of hepatitis a."
-
-df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "430"] <- "the present study explores the change sensitivity of the two constructs of worry and risk perception, and how the two constructs are differentially associated with objective risk factors such as family history of dementia."
-
-df$`Aim of study`[is.na(df$`Aim of study`) & df$`Covidence #` == "132"] <- "this study investigated the reliability and validity of the korean version of the penn state worry questionnaire for children (pswq-ck)."
 
 #add design
-df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "230"] <- "serial-cross sectional"
+df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "230"] <- "serial-cross sectional"
 
-df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "534"] <- "longitudinal"
+df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "534"] <- "longitudinal"
 
-df$`What type of design was used?`[is.na(df$`What type of design was used?`) & df$`Covidence #` == "86"] <- "longitudinal"
+df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "86"] <- "longitudinal"
+
+
+#change how often was is meassured 
+df_edit$times_measured_1 [is.na(df_edit$times_measured_1) & df$`Covidence #` == "168"] <- "540"
+
+
+#Add the new collums for the items numbers
+
+# Install and load the stringr package
+install.packages("stringr")
+library(stringr)
+
+
+df_edit$how_computed_1 <- as.character(df_edit$how_computed_1)
+df_edit$how_computed_2 <- as.character(df_edit$how_computed_2)
+df_edit$how_computed_3 <- as.character(df_edit$how_computed_3)
+df_edit$how_computed_4 <- as.character(df_edit$how_computed_4)
+df_edit$how_computed_5 <- as.character(df_edit$how_computed_5)
+
+
+
+# Extract the item count and create a new column named 'item_number'
+df_edit$item_number_1 <- as.numeric(str_extract(df_edit$how_computed_1, "\\d+"))
+df_edit$item_number_2 <- as.numeric(str_extract(df_edit$how_computed_2, "\\d+"))
+df_edit$item_number_3 <- as.numeric(str_extract(df_edit$how_computed_3, "\\d+"))
+df_edit$item_number_4 <- as.numeric(str_extract(df_edit$how_computed_4, "\\d+"))
+df_edit$item_number_5 <- as.numeric(str_extract(df_edit$how_computed_5, "\\d+"))
+
+
+#new colum for intervention yes/no (1/2)
+df_edit$intervention_yesno_1 <- ifelse(!is.na(df_edit$intervention_1) & df_edit$intervention_1 != "", 1, 0)
+df_edit$intervention_yesno_2 <- ifelse(!is.na(df_edit$intervention_2) & df_edit$intervention_2 != "", 1, 0)
+df_edit$intervention_yesno_3 <- ifelse(!is.na(df_edit$intervention_3) & df_edit$intervention_3 != "", 1, 0)
+df_edit$intervention_yesno_4 <- ifelse(!is.na(df_edit$intervention_4) & df_edit$intervention_4 != "", 1, 0)
+df_edit$intervention_yesno_5 <- ifelse(!is.na(df_edit$intervention_5) & df_edit$intervention_5 != "", 1, 0)
+
+
+#new colum for exposure yes/no (1/2)
+df_edit$exposure_yesno_1 <- ifelse(!is.na(df_edit$exposure_1) & df_edit$exposure_1 != "", 1, 0)
+df_edit$exposure_yesno_2 <- ifelse(!is.na(df_edit$exposure_2) & df_edit$exposure_2 != "", 1, 0)
+df_edit$exposure_yesno_3 <- ifelse(!is.na(df_edit$exposure_3) & df_edit$exposure_3 != "", 1, 0)
+df_edit$exposure_yesno_4 <- ifelse(!is.na(df_edit$exposure_4) & df_edit$exposure_4 != "", 1, 0)
+df_edit$exposure_yesno_5 <- ifelse(!is.na(df_edit$exposure_5) & df_edit$exposure_5 != "", 1, 0)
+
+#change the colum temporal analysis 1-5 to 1 and 0
+df_edit$temporal_analysis_1 <- ifelse(df_edit$temporal_analysis_1 == "yes", 1, 0)
+df_edit$temporal_analysis_2 <- ifelse(df_edit$temporal_analysis_2 == "yes", 1, 0)
+df_edit$temporal_analysis_3 <- ifelse(df_edit$temporal_analysis_3 == "yes", 1, 0)
+df_edit$temporal_analysis_4 <- ifelse(df_edit$temporal_analysis_4 == "yes", 1, 0)
+df_edit$temporal_analysis_5 <- ifelse(df_edit$temporal_analysis_5 == "yes", 1, 0)
+
+# Create a new column 'health' based on conditions in 'domain'
+df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes)\\b", df_edit$domain, ignore.case = TRUE))
+
+
+
+
+
+
+
+
