@@ -159,6 +159,93 @@ df_edit$item_number_3 <- as.numeric(str_extract(df_edit$how_computed_3, "\\d+"))
 df_edit$item_number_4 <- as.numeric(str_extract(df_edit$how_computed_4, "\\d+"))
 df_edit$item_number_5 <- as.numeric(str_extract(df_edit$how_computed_5, "\\d+"))
 
+#Add all the missing item numbers
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Bish"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) &  df_edit$author == "Smith"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Concern and Risk Perception: Effects on Osteoprotective Behaviour "] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Carere"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Accuracy of HIV Risk Perception in East Zimbabwe 2003–2013 "] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Franceschinis"] <- 5
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Schulz"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Maheu"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Stuijfzand"] <- 10
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Pieterse"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Vornanen"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Moustafa"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Kuk"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == " Fear of COVID-19 predicts vaccination willingness 14 months later "] <- 8
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Wagoner"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author ==  "Malt"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Chuo"] <- 4
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Francis"] <- 12
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Kollmann"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Helweg-Larsen"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Helleringer"] <- 3
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Wambua"] <- 9
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Kobbeltved"] <- 3
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Sapp"] <- 4
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Eggers"] <- 4
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Concern and risk perception of osteoporosis and fracture among post-menopausal Australian women: results from the Global Longitudinal Study of Osteoporosis in Women (GLOW) cohort "] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Poulus"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "de Graaff"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Betsch"] <- 4
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Bearth"] <- 3
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$how_computed_1 == "measured using two sub scales, cognitive and affective perception "] <- 8
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == " Rimal"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == " Schumpe"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Millman"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Bränström"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Moodie"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Grant"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Lehto"] <- 25
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Cox"] <- 11
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Lindgren"] <- 14
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Quinn"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Kim"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Canetti"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Johnson"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Armstrong-Carter"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Johnson"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Rockliffe"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Contreras- Yáñez"] <- ""
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Kim"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Thomas"] <- 7
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Sorvali"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Shoots- Reinhard"] <- 5
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Risk perception and smoking behavior in medically ill smokers: a prospective study "] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Older marijuana users’ marijuana risk perceptions: associations with marijuana use patterns and marijuana and other substance use disorders "] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == " Relationships between changes in HIV risk perception and condom use in East Zimbabwe 2003–2013: population-based longitudinal analyses "] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Cooper"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Salloum"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Lin"] <- 16
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Oyenubi"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Social Networks and HIV/AIDS Risk Perceptions "] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Measuring risk perceptions of skin cancer: Reliability and validity of different operationalizations "] <- 14
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "Relationships between risk-taking behaviour and subsequent risk perceptions "] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$paper_title == "How a Nuclear Power Plant Accident Influences Acceptance of Nuclear Power: Results of a Longitudinal Study Before and After the Fukushima Disaster "] <- 3
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Ullrich-Kleinmanns"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Elad-Strenger"] <- 6
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Tenkorang"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Walthouwer"] <- 12
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Russo"] <- 1
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Suzuki"] <- 2
+df_edit$item_number_1[is.na(df_edit$item_number_1) & df_edit$author == "Grevenstein"] <- 3
+
+df_edit <- df_edit %>%
+  mutate(item_number_1 = ifelse(item_number_1 == 0, NA, item_number_1))
+
+library(dplyr)
+
+df_edit <- df_edit %>%
+  mutate(
+    item_number_1 = ifelse(grepl("single item", measured_1, ignore.case = TRUE), 1, item_number_1),
+    item_number_2 = ifelse(grepl("single item", measured_2, ignore.case = TRUE), 1, item_number_2),
+    item_number_3 = ifelse(grepl("single item", measured_3, ignore.case = TRUE), 1, item_number_3),
+    item_number_4 = ifelse(grepl("single item", measured_4, ignore.case = TRUE), 1, item_number_4),
+    item_number_5 = ifelse(grepl("single item", measured_5, ignore.case = TRUE), 1, item_number_5)
+  )
+
+
 
 #new colum for intervention yes/no (1/2)
 df_edit$intervention_yesno_1 <- ifelse(!is.na(df_edit$intervention_1) & df_edit$intervention_1 != "", 1, 0)
