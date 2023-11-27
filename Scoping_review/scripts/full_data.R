@@ -8,6 +8,9 @@
 library(dplyr)
 library(here)
 library(readr)
+#install.packages("tidyverse")
+library(tidyverse)
+
 
 #set working directory
 setwd(here())
@@ -76,7 +79,6 @@ names(df_rename)
 # Write the data frame to a CSV file
 write.csv(df_rename, file = "Scoping_review/data/secondary/df_rename.csv")
 
-
 ####edit columns ------------------ 
 
 # Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name, study id and covidence created title
@@ -133,14 +135,13 @@ df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "534"] <-
 df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "86"] <- "longitudinal"
 
 
-#change how often was is meassured 
-df_edit$times_measured_1 [is.na(df_edit$times_measured_1) & df$`Covidence #` == "168"] <- "540"
+#change how often was is measured ("daily" value)
+df_edit$times_measured_1[171] <- 540
 
-
-#Add the new collums for the items numbers
+#Add the new columns for the items numbers
 
 # Install and load the stringr package
-install.packages("stringr")
+#install.packages("stringr")
 library(stringr)
 
 
@@ -149,7 +150,6 @@ df_edit$how_computed_2 <- as.character(df_edit$how_computed_2)
 df_edit$how_computed_3 <- as.character(df_edit$how_computed_3)
 df_edit$how_computed_4 <- as.character(df_edit$how_computed_4)
 df_edit$how_computed_5 <- as.character(df_edit$how_computed_5)
-
 
 
 # Extract the item count and create a new column named 'item_number'
@@ -246,8 +246,7 @@ df_edit <- df_edit %>%
   )
 
 
-
-#new colum for intervention yes/no (1/2)
+#new column for intervention yes/no (1/2)
 df_edit$intervention_yesno_1 <- ifelse(!is.na(df_edit$intervention_1) & df_edit$intervention_1 != "", 1, 0)
 df_edit$intervention_yesno_2 <- ifelse(!is.na(df_edit$intervention_2) & df_edit$intervention_2 != "", 1, 0)
 df_edit$intervention_yesno_3 <- ifelse(!is.na(df_edit$intervention_3) & df_edit$intervention_3 != "", 1, 0)
@@ -255,14 +254,14 @@ df_edit$intervention_yesno_4 <- ifelse(!is.na(df_edit$intervention_4) & df_edit$
 df_edit$intervention_yesno_5 <- ifelse(!is.na(df_edit$intervention_5) & df_edit$intervention_5 != "", 1, 0)
 
 
-#new colum for exposure yes/no (1/2)
+#new column for exposure yes/no (1/2)
 df_edit$exposure_yesno_1 <- ifelse(!is.na(df_edit$exposure_1) & df_edit$exposure_1 != "", 1, 0)
 df_edit$exposure_yesno_2 <- ifelse(!is.na(df_edit$exposure_2) & df_edit$exposure_2 != "", 1, 0)
 df_edit$exposure_yesno_3 <- ifelse(!is.na(df_edit$exposure_3) & df_edit$exposure_3 != "", 1, 0)
 df_edit$exposure_yesno_4 <- ifelse(!is.na(df_edit$exposure_4) & df_edit$exposure_4 != "", 1, 0)
 df_edit$exposure_yesno_5 <- ifelse(!is.na(df_edit$exposure_5) & df_edit$exposure_5 != "", 1, 0)
 
-#change the colum temporal analysis 1-5 to 1 and 0
+#change the column temporal analysis 1-5 to 1 and 0
 df_edit$temporal_analysis_1 <- ifelse(df_edit$temporal_analysis_1 == "yes", 1, 0)
 df_edit$temporal_analysis_2 <- ifelse(df_edit$temporal_analysis_2 == "yes", 1, 0)
 df_edit$temporal_analysis_3 <- ifelse(df_edit$temporal_analysis_3 == "yes", 1, 0)
@@ -273,9 +272,197 @@ df_edit$temporal_analysis_5 <- ifelse(df_edit$temporal_analysis_5 == "yes", 1, 0
 df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes)\\b", df_edit$domain, ignore.case = TRUE))
 
 
+######data quality---------------------------
+###y#spellings, right values
+
+##prop_female
+columns_to_check <- c("prop_female_1", "prop_female_2", "prop_female_3", "prop_female_4", "prop_female_5")
+
+out_of_range <- apply(df_edit[, columns_to_check], 2, function(x) any(x < 0 | x > 1))
+
+cat(ifelse(any(out_of_range), paste("Columns", names(out_of_range[out_of_range]), "have values outside [0, 1]"), "No columns with values outside [0, 1]"), "\n")
+
+#no values over 0 and 1 in prop_female
+
+##risk
+columns_to_check_risk <- c("risk_1", "risk_2", "risk_3", "risk_4", "risk_5")
+
+unique_spellings <- lapply(df_edit[, columns_to_check_risk], unique)
+
+# Display unique spellings for each column
+for (i in seq_along(unique_spellings)) {
+  cat("Unique spellings in", columns_to_check_risk[i], ":", toString(unique_spellings[[i]]), "\n")
+}
+
+#Unique spellings in risk_1 : risk, worry, concern, threat
+#Unique spellings in risk_2 : worry, NA, concern, risk, threat
+#Unique spellings in risk_3 : NA, risk, worry
+#Unique spellings in risk_4 : NA, risk
+#Unique spellings in risk_5 : NA, worry
+
+#seems to be alright 
+
+##country
+columns_to_check_country <- c("country_1", "country_2", "country_3", "country_4", "country_5")
+
+unique_countries <- lapply(df_edit[, columns_to_check_country], unique)
+
+# Display unique values for each column
+for (i in seq_along(unique_countries)) {
+  cat("Unique values in", columns_to_check_country[i], ":", toString(unique_countries[[i]]), "\n")
+}
+
+# Replace specified values with "uk"
+df_edit <- df_edit %>%
+  mutate_at(vars(columns_to_check_country), ~ ifelse(. %in% c("united kingdom", "uk", "the united kingdom"), "uk", .))
+
+# Replace specified values with "usa"
+df_edit <- df_edit %>%
+  mutate_at(vars(columns_to_check_country), ~ ifelse(. %in% c("usa", "united states of america", "the united states of america"), "usa", .))
+
+# Replace specified values with "netherlands"
+df_edit <- df_edit %>%
+  mutate_at(vars(columns_to_check_country), ~ ifelse(. %in% c("netherlands", "the netherlands"), "netherlands", .))
+
+df_edit$country_1[52] <- NA
+
+###
+#columns_to_check_country <- c("country_1", "country_2", "country_3", "country_4", "country_5")
+
+#unique_countries <- unique(unlist(df_edit[, columns_to_check_country]))
+
+# Display unique values
+#cat("Unique values in columns", paste(columns_to_check_country, collapse = ", "), ":", toString(unique_countries), "\n")
 
 
+#remove column comparison_significant 
+columns_to_remove_cs <- c("comparison_significant_1", "comparison_significant_2", "comparison_significant_3", "comparison_significant_4", "comparison_significant_5")
+
+# Remove specified columns
+df_edit <- df_edit[, !(names(df_edit) %in% columns_to_remove_cs), drop = FALSE]
+
+##study design 
+# Display unique values in the "study_design" variable
+unique_study_design <- unique(df_edit$study_design)
+cat("Unique values in 'study_design':", toString(unique_study_design), "\n")
+
+df_edit <- df_edit %>%
+  mutate_at(vars(study_design), ~ ifelse(. %in% c("serial-cross sectional", "serial cross-sectional"), "serial cross-sectional", .))
+
+##measured
+# Specify the columns to check
+columns_to_check_measured <- c("measured_1", "measured_2", "measured_3", "measured_4", "measured_5")
+
+# Display unique values for each column
+for (column in columns_to_check_measured) {
+  unique_values <- unique(df_edit[[column]])
+  cat("Unique values in", column, ":", toString(unique_values), "\n")
+}
+
+#set "questionnaire" to "scale" 
+df_edit[, columns_to_check_measured] <- lapply(df_edit[, columns_to_check_measured], function(x) ifelse(x == "questionnaire", "scale", x))
+
+#every value is now single item, scale or NA with the exeption of one value: audiotaped, hypothetical stories
+
+##study
+
+# Specify the columns to check
+columns_to_check_study <- c("study_1", "study_2", "study_3", "study_4", "study_5")
+
+# Display unique values for each column
+for (column in columns_to_check_study) {
+  unique_values <- unique(df_edit[[column]])
+  cat("Unique values in", column, ":", toString(unique_values), "\n")
+}
+#looks alright
+
+##how_analyzed
+
+# Specify the columns to check
+columns_to_check_how_analyzed <- c("how_analyzed_1", "how_analyzed_2", "how_analyzed_3", "how_analyzed_4", "how_analyzed_5")
+
+# Display unique values for each column
+for (column in columns_to_check_how_analyzed) {
+  unique_values <- unique(df_edit[[column]])
+  cat("Unique values in", column, ":", toString(unique_values), "\n")
+}
 
 
+#mean difference
+df_edit <- df_edit %>%
+  mutate_at(vars(columns_to_check_how_analyzed), ~ ifelse(. %in% c("mean difference", "mean differences"), "mean difference", .))
 
+#temporal trend
+df_edit <- df_edit %>%
+  mutate_at(vars(columns_to_check_how_analyzed), ~ ifelse(. %in% c("temporal trend", "time trend"), "temporal trend", .))
+
+
+##remove unwanted variables in temporal_trend_result_1
+# Specify values to remove
+values_to_remove <- c("0.29", "moderater stable (r= 0.5 - 0.7)")
+
+# Replace specified values with NA in temporal_trend_result_1
+df_edit$temporal_trend_result_1 <- replace(df_edit$temporal_trend_result_1, df_edit$temporal_trend_result_1 %in% values_to_remove, NA)
+
+# Change the value to "not significant" in mean_difference_result_1 for row 7, was weird...
+df_edit$mean_difference_result_1[7] <- "not significant"
+
+##change interval to days for all the relevant columns 
+
+# Display unique values in test-retest_interval_1
+unique_values <- unique(df_edit$`test-retest_interval_1`)
+
+cat("Unique values in 'test-retest_interval_1':", toString(unique_values), "\n")
+
+####change interval columns--------------------
+
+#weird values
+df_edit$"test-retest_interval_1"[1] <- NA  
+df_edit$"test-retest_interval_1"[17] <- "15 days" 
+df_edit$"test-retest_interval_1"[26] <- "425 days"
+#df_edit$"test-retest_interval_1"[56] <- " days"  
+
+transform_interval <- function(df, column_name) {
+  df %>%
+    separate(!!sym(column_name), into = c("number", "unit"), sep = " ") %>%
+    mutate(number = as.numeric(number)) %>%
+    mutate(!!sym(column_name) := case_when(
+      unit %in% c("days", "day") ~ number * 1,
+      unit %in% c("weeks", "week") ~ number * 7,
+      unit %in% c("months", "month") ~ number * 30,
+      unit %in% c("years", "year") ~ number * 365
+    )) %>%
+    select(-number, -unit)
+}
+
+##test-retest_interval
+df_edit1 <- df_edit %>%
+  transform_interval("test-retest_interval_1") %>%
+  transform_interval("test-retest_interval_2") %>%
+  transform_interval("test-retest_interval_3") %>%
+  transform_interval("test-retest_interval_4") %>%
+  transform_interval("test-retest_interval_5")
+
+##temporal_trend_interval
+df_edit1 <- df_edit %>%
+  transform_interval("temporal_trend_interval_1") %>%
+  transform_interval("temporal_trend_interval_2") %>%
+  transform_interval("temporal_trend_interval_3") %>%
+  transform_interval("temporal_trend_interval_4") %>%
+  transform_interval("temporal_trend_interval_5")
+
+##mean_difference_interval
+#weird values
+df_edit$"mean_difference_interval_1"[117] <- "605 days" 
+df_edit$"mean_difference_interval_1"[119] <- "605 days"  
+df_edit$"mean_difference_interval_1"[138] <- NA  
+df_edit$"mean_difference_interval_1"[154] <- "368.5 days"
+
+df_edit1 <- df_edit %>%
+  transform_interval("mean_difference_interval_1") %>%
+  transform_interval("mean_difference_interval_2") %>%
+  transform_interval("mean_difference_interval_3") %>%
+  transform_interval("mean_difference_interval_4") %>%
+
+####check the warning messages to make sure everything is in place, at the end do it in df_edit and not in df_edit1
 
