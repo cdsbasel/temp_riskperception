@@ -414,6 +414,39 @@ unique_values <- unique(df_edit$`test-retest_interval_1`)
 
 cat("Unique values in 'test-retest_interval_1':", toString(unique_values), "\n")
 
+##type_participant 
+# List of column names
+type_participants_columns <- c("type_participants_1", "type_participants_2", "type_participants_3", "type_participants_4", "type_participants_5")
+
+# Display unique values in each type participant column
+for (column in type_participants_columns) {
+  unique_values <- unique(df_edit[, column])
+  cat("Unique values in", column, ":", toString(unique_values), "\n")
+}
+
+df_edit <- df_edit %>%
+  mutate_at(all_of(type_participants_columns), ~ ifelse(. %in% c("laypeople", "layeople", "159"), "laypeople", .))
+
+df_edit$type_participants_1[253] <- "laypeople"
+
+#age_category
+# List of column names
+age_category_columns <- c("age_category_1", "age_category_2", "age_category_3", "age_category_4", "age_category_5")
+
+# Display unique values in each age category column
+for (column in age_category_columns) {
+  unique_values <- unique(df_edit[, column])
+  cat("Unique values in", column, ":", toString(unique_values), "\n")
+}
+
+# Replace specific values in age_category_1 to age_category_5
+df_edit <- df_edit %>%
+  mutate_at(vars(all_of(age_category_columns)), 
+  ~ ifelse(. %in% c("adult", "adults\n\n", "laypeople", "older adults and younger adults"), "adults",
+                     ifelse(. %in% c("adolescent", "adolescents"), "adolescents",
+                     ifelse(. == "adolescents and young adults", "young adults", .))))
+
+
 ####change interval columns--------------------
 
 #weird values
@@ -436,7 +469,7 @@ transform_interval <- function(df, column_name) {
 }
 
 ##test-retest_interval
-df_edit1 <- df_edit %>%
+df_edit <- df_edit %>%
   transform_interval("test-retest_interval_1") %>%
   transform_interval("test-retest_interval_2") %>%
   transform_interval("test-retest_interval_3") %>%
@@ -444,7 +477,7 @@ df_edit1 <- df_edit %>%
   transform_interval("test-retest_interval_5")
 
 ##temporal_trend_interval
-df_edit1 <- df_edit %>%
+df_edit <- df_edit %>%
   transform_interval("temporal_trend_interval_1") %>%
   transform_interval("temporal_trend_interval_2") %>%
   transform_interval("temporal_trend_interval_3") %>%
@@ -458,11 +491,62 @@ df_edit$"mean_difference_interval_1"[119] <- "605 days"
 df_edit$"mean_difference_interval_1"[138] <- NA  
 df_edit$"mean_difference_interval_1"[154] <- "368.5 days"
 
-df_edit1 <- df_edit %>%
+df_edit <- df_edit %>%
   transform_interval("mean_difference_interval_1") %>%
   transform_interval("mean_difference_interval_2") %>%
   transform_interval("mean_difference_interval_3") %>%
   transform_interval("mean_difference_interval_4") %>%
+  transform_interval("mean_difference_interval_5")
 
 ####check the warning messages to make sure everything is in place, at the end do it in df_edit and not in df_edit1
+
+# # Check if the same rows have values for the specified sets of variables
+# # Create subsets of the data frames with the relevant columns
+# columns_to_check <- c(
+#   paste0("test-retest_interval_", 1:5),
+#   paste0("temporal_trend_interval_", 1:5),
+#   paste0("mean_difference_interval_", 1:5)
+# )
+# 
+# subset_df_edit <- df_edit[, columns_to_check]
+# subset_df_edit1 <- df_edit1[, columns_to_check]
+# 
+# # Create a logical matrix indicating differences
+# differences_matrix <- subset_df_edit != subset_df_edit1
+# 
+# # Find the rows where differences exist
+# differing_rows <- which(rowSums(differences_matrix) > 0)
+# 
+# # Display differing rows
+# if (length(differing_rows) == 0) {
+#   print("The rows with values for the specified sets of variables are the same.")
+# } else {
+#   print("The following rows have differences:")
+#   print(differing_rows)
+# }
+
+#i believe everything worked ---Amanda can you please check that as well?
+#since everything worked, transfer result to one dataframe and comment the code.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
