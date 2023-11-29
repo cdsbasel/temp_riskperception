@@ -268,8 +268,42 @@ df_edit$temporal_analysis_3 <- ifelse(df_edit$temporal_analysis_3 == "yes", 1, 0
 df_edit$temporal_analysis_4 <- ifelse(df_edit$temporal_analysis_4 == "yes", 1, 0)
 df_edit$temporal_analysis_5 <- ifelse(df_edit$temporal_analysis_5 == "yes", 1, 0)
 
+##### add the new domains health, finance, nature, crime and nuclear
+
+#create a new column finance based on conditions in domain
+df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nature based on conditions in domain
+df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column crime based on conditions in domain
+df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nuclear based on conditions in domain
+df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic,)\\b", df_edit$domain, ignore.case = TRUE))
+
 # Create a new column 'health' based on conditions in 'domain'
 df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes)\\b", df_edit$domain, ignore.case = TRUE))
+
+
+
+
+
+# Assuming df_edit is your DataFrame
+# Combine all text in the 'domain' column
+text <- tolower(paste(df_edit$domain, collapse = " "))
+
+# Split the text into words
+words <- unlist(strsplit(text, "\\s+"))
+
+# Get unique words
+unique_words <- unique(words)
+
+# Print the unique words
+print(unique_words)
+
+
+
 
 
 ######data quality---------------------------
@@ -526,7 +560,7 @@ df_edit <- df_edit %>%
 # }
 
 #i believe everything worked ---Amanda can you please check that as well?
-#since everything worked, transfer result to one dataframe and comment the code.
+#since everything worked, transfer result to one dataframe and comment the code.For me everything looked good. 
 
 
 
