@@ -268,39 +268,17 @@ df_edit$temporal_analysis_3 <- ifelse(df_edit$temporal_analysis_3 == "yes", 1, 0
 df_edit$temporal_analysis_4 <- ifelse(df_edit$temporal_analysis_4 == "yes", 1, 0)
 df_edit$temporal_analysis_5 <- ifelse(df_edit$temporal_analysis_5 == "yes", 1, 0)
 
+
+
+
+
 ##### add the new domains health, finance, nature, crime and nuclear
-
-#create a new column finance based on conditions in domain
-df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column nature based on conditions in domain
-df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column crime based on conditions in domain
-df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism,)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column nuclear based on conditions in domain
-df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic,)\\b", df_edit$domain, ignore.case = TRUE))
 
 # Create a new column 'health' based on conditions in 'domain'
 df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes)\\b", df_edit$domain, ignore.case = TRUE))
 
 
 
-
-
-# Assuming df_edit is your DataFrame
-# Combine all text in the 'domain' column
-text <- tolower(paste(df_edit$domain, collapse = " "))
-
-# Split the text into words
-words <- unlist(strsplit(text, "\\s+"))
-
-# Get unique words
-unique_words <- unique(words)
-
-# Print the unique words
-print(unique_words)
 
 
 
@@ -564,6 +542,19 @@ df_edit <- df_edit %>%
 
 
 
+##### add the new domains health, finance, nature, crime and nuclear
+
+#create a new column finance based on conditions in domain
+df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nature based on conditions in domain
+df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column crime based on conditions in domain
+df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nuclear based on conditions in domain
+df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic,)\\b", df_edit$domain, ignore.case = TRUE))
 
 
 
@@ -571,7 +562,147 @@ df_edit <- df_edit %>%
 
 
 
+# Create a new dataframe for better editing 
+new_df <- data.frame(
+  test_retest_results_1 = df_edit$`test-retest_result_1`
+)
 
+new_df$ICC_results_1 <- NA
+new_df$correlation_results_1 <- NA
+new_df$ICC_results_1.1 <- NA
+new_df[, paste0("correlation_results_1.", 1:8)] <- NA
+
+
+# create new column ICC_results_1 and correlation_results_1 in new_df
+new_df$ICC_results_1 <- df_edit$`test-retest_result_1`
+new_df$correlation_results_1 <- df_edit$`test-retest_result_1`
+
+
+# replace 'correlation_results_1'-row, with icc= or icc = or icc with NA
+new_df$correlation_results_1[grep("icc[[:space:]]*=[[:space:]]*[0-9]+", new_df$correlation_results_1, ignore.case = TRUE)] <- NA
+
+
+# delete in the row 'ICC_results_1'all the double numbers of the correlation row
+new_df$ICC_results_1[!is.na(new_df$correlation_results_1)] <- NA
+
+# replace
+new_df$ICC_results_1[216] <- 0.42
+
+# replace
+new_df$correlation_results_1[216] <- 0.87
+
+
+#Clean up the column ICC_results_1 and column ICC_results_1.1
+new_df$ICC_results_1.1[17] <- "0.82"
+new_df$ICC_results_1[17] <- "0.78"
+new_df$ICC_results_1.1[209] <- "0.705"
+new_df$ICC_results_1[209] <- "0.877"
+new_df$ICC_results_1.1[179] <- "0.82"
+new_df$ICC_results_1[179] <- "0.75"
+new_df$ICC_results_1 <- gsub("[^-0-9.,]+", "", new_df$ICC_results_1)
+
+
+#Clean up the column correlation_results_1 and column correaltion_results_1.1-1.8
+new_df$correlation_results_1[179] <- "0.51"
+new_df$correlation_results_1.1[179] <- "0.58"
+new_df$correlation_results_1[43] <- "0.49"
+new_df$correlation_results_1.1[43] <- "0.66"
+
+new_df$correlation_results_1[163] <- "0.49"
+new_df$correlation_results_1.1[163] <- "0.59"
+
+new_df$correlation_results_1[227] <- "0.57"
+new_df$correlation_results_1.1[227] <- "0.46"
+new_df$correlation_results_1.2[227] <- "0.58"
+
+new_df$correlation_results_1[176] <- "0.22"
+new_df$correlation_results_1.1[176] <- "0.6"
+
+new_df$correlation_results_1[101] <- "0.47"
+new_df$correlation_results_1.1[101] <- "0.58"
+
+new_df$correlation_results_1[32] <- "0.54"
+new_df$correlation_results_1.1[32] <- "0.34"
+new_df$correlation_results_1.2[32] <- "0.5"
+
+new_df$correlation_results_1[197] <- "0.13"
+new_df$correlation_results_1.1[197] <- "0.96"
+
+new_df$correlation_results_1[66] <- "0.49"
+new_df$correlation_results_1.1[66] <- "0.31"
+
+new_df$correlation_results_1[241] <- "0.68"
+new_df$correlation_results_1.1[241] <- "0.09"
+
+new_df$correlation_results_1[127] <- NA
+new_df$correlation_results_1[230] <- NA
+
+new_df$correlation_results_1[193] <- "0.47"
+new_df$correlation_results_1.1[193] <- "0.54"
+new_df$correlation_results_1.2[193] <- "0.52"
+new_df$correlation_results_1.3[193] <- "0.38"
+
+new_df$correlation_results_1[63] <- "0.49"
+new_df$correlation_results_1.1[63] <- "0.43"
+
+new_df$correlation_results_1[99] <- "0.85"
+new_df$correlation_results_1.1[99] <- "0.88"
+
+new_df$correlation_results_1[220] <- "0.92"
+new_df$correlation_results_1.1[220] <- "0.95"
+new_df$correlation_results_1.2[220] <- "0.87"
+
+new_df$correlation_results_1[198] <- "0.44"
+new_df$correlation_results_1.1[198] <- "0.63"
+
+new_df$correlation_results_1[240] <- "0.69"
+new_df$correlation_results_1.1[240] <- "0.72"
+
+new_df$correlation_results_1[8] <- "0.70"
+new_df$correlation_results_1.1[8] <- "0.74"
+
+new_df$correlation_results_1[83] <- "0.58"
+new_df$correlation_results_1.1[83] <- "0.55"
+new_df$correlation_results_1.2[83] <- "0.45"
+new_df$correlation_results_1.3[83] <- "0.42"
+new_df$correlation_results_1.4[83] <- "0.43"
+new_df$correlation_results_1.5[83] <- "0.38"
+new_df$correlation_results_1.6[83] <- "0.42"
+new_df$correlation_results_1.7[83] <- "0.42"
+new_df$correlation_results_1.8[83] <- "0.54"
+
+new_df$correlation_results_1[215] <- "-0.3784"
+new_df$correlation_results_1[161] <- "-0.19"
+
+new_df$correlation_results_1 <- gsub("[^0-9.,-]+", "", new_df$correlation_results_1)
+
+#add the dataframe back
+new_df_subset <- new_df[, !grepl("test-retest", names(new_df))]
+
+df_edit <- cbind(df_edit, new_df_subset)
+
+#create a second new df for better editing
+# Select the columns 'test-retest_results_2', 'test-retest_results_3', 'test-retest_results_4', 'test-retest_results_5'
+new_dataframe <- data.frame(
+  test_retest_results_1 = df_edit$`test-retest_result_2`,
+  test_retest_results_1 = df_edit$`test-retest_result_3`,
+  test_retest_results_1 = df_edit$`test-retest_result_4`,
+  test_retest_results_1 = df_edit$`test-retest_result_5`
+)
+
+#rename the collums to correlation_results_2-5
+names(new_dataframe) <- c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")
+
+new_dataframe$correlation_results_2[215] <- "-0.2666"
+new_dataframe$correlation_results_3[215] <- "-0.6188"
+new_dataframe$correlation_results_2[23] <- NA
+
+
+# Remove all non-numeric characters from the entire dataframe
+new_dataframe[] <- lapply(new_dataframe, function(x) gsub("[^0-9.,-]+", "", x))
+
+# Add the relevant columns from 'new_dataframe' back to 'df_edit'
+df_edit <- cbind(df_edit, new_dataframe[, c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")])
 
 
 
