@@ -705,9 +705,14 @@ new_dataframe[] <- lapply(new_dataframe, function(x) gsub("[^0-9.,-]+", "", x))
 df_edit <- cbind(df_edit, new_dataframe[, c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")])
 
 
-
-
-
+#add all the missing sample sizes. 
+df_edit$sample_size_1[24] <- 359
+df_edit$sample_size_1[28] <- 138
+df_edit$sample_size_1[70] <- 366
+df_edit$sample_size_1[118] <- 15431
+df_edit$sample_size_1[170] <- 686
+df_edit$sample_size_1[177] <- 2705
+df_edit$sample_size_1[235] <- 159
 
 
 
