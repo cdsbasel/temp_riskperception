@@ -733,7 +733,7 @@ print(values_with_other)
 #edit domains 
 df_edit <- df_edit %>%
   mutate(
-    health = ifelse(grepl("road safety intervention|affect/cognition|risk communication and decision-making during emergencies", tolower(domain)), 1, 0),
+    health = ifelse(grepl("road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies", tolower(domain)), 1, 0),
     nature = ifelse( grepl("climate change|forests", tolower(domain)),1, 0),
     crime = ifelse( grepl("speeding|sexual assault", tolower(domain)),1, 0),
     nuclear = ifelse(grepl("hazardous waste site", tolower(domain)),1, 0))
@@ -876,3 +876,55 @@ df_edit$units_assessed_1[142] <- "range"
 df_edit$units_assessed_1[29] <- "range"
 df_edit$units_assessed_1[144] <- "range"
 df_edit$units_assessed_1[15] <- "likert scale"
+
+
+#correct and add the item numbers
+df_edit$item_number_1[123] <- 8
+df_edit$item_number_1[124] <- 8
+df_edit$item_number_1[126] <- NA
+df_edit$item_number_1[131] <- 4
+df_edit$item_number_1[141] <- NA
+df_edit$study_design[239] <- "serial cross-sectional"
+
+
+#make one finale dataset for the analysis 
+df_final <- df_edit[c(
+  "author", "paper_title", "publication_year", "data_availability",
+  "study_design", "risk_1", "risk_2", "risk_3", "risk_4", "risk_5",
+  "measured_1", "measured_2", "measured_3", "measured_4", "measured_5",
+  "units_assessed_1", "units_assessed_2", "units_assessed_3", "units_assessed_4", "units_assessed_5",
+  "item_number_1", "item_number_2", "item_number_3", "item_number_4", "item_number_5",
+  "times_measured_1", "times_measured_2", "times_measured_3", "times_measured_4", "times_measured_5",
+  "study_1", "study_2", "study_3", "study_4", "study_5",
+  "intervention_yesno_1", "intervention_yesno_2", "intervention_yesno_3", "intervention_yesno_4", "intervention_yesno_5",
+  "exposure_yesno_1", "exposure_yesno_2", "exposure_yesno_3", "exposure_yesno_4", "exposure_yesno_5",
+  "domain", "health", "validation", "nature", "finance", "nuclear", "political", "social",
+  "temporal_analysis_1", "temporal_analysis_2", "temporal_analysis_3", "temporal_analysis_4", "temporal_analysis_5",
+  "how_analyzed_1", "how_analyzed_2", "how_analyzed_3", "how_analyzed_4", "how_analyzed_5",
+  "correlation_results_1", "correlation_results_1.1", "correlation_results_1.2", "correlation_results_1.3", "correlation_results_1.4",
+  "correlation_results_1.5", "correlation_results_1.6", "correlation_results_1.7", "correlation_results_1.8",
+  "correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5",
+  "ICC_results_1", "ICC_results_1.1",
+  "temporal_trend_result_1", "temporal_trend_result_2", "temporal_trend_result_3", "temporal_trend_result_4", "temporal_trend_result_5",
+  "mean_difference_result_1", "mean_difference_result_2", "mean_difference_result_3", "mean_difference_result_4", "mean_difference_result_5",
+  "test-retest_interval_1", "test-retest_interval_2", "test-retest_interval_3", "test-retest_interval_4", "test-retest_interval_5",
+  "temporal_trend_interval_1", "temporal_trend_interval_2", "temporal_trend_interval_3", "temporal_trend_interval_4", "temporal_trend_interval_5",
+  "mean_difference_interval_1", "mean_difference_interval_2", "mean_difference_interval_3", "mean_difference_interval_4", "mean_difference_interval_5",
+  "type_participants_1", "type_participants_2", "type_participants_3", "type_participants_4", "type_participants_5",
+  "sample_category_1", "sample_category_2", "sample_category_3", "sample_category_4", "sample_category_5",
+  "age_category_1", "age_category_2", "age_category_3", "age_category_4", "age_category_5",
+  "country_1", "country_2", "country_3", "country_4", "country_5",
+  "sample_size_1", "sample_size_2", "sample_size_3", "sample_size_4", "sample_size_5",
+  "prop_female_1", "prop_female_2", "prop_female_3", "prop_female_4", "prop_female_5",
+  "mean_age_1", "mean_age_2", "mean_age_3", "mean_age_4", "mean_age_5",
+  "SD_age_1", "SD_age_2", "SD_age_3", "SD_age_4", "SD_age_5",
+  "lowest_age_1", "lowest_age_2", "lowest_age_3", "lowest_age_4", "lowest_age_5",
+  "highest_age_1", "highest_age_2", "highest_age_3", "highest_age_4", "highest_age_5"
+)]
+
+
+
+
+
+
+
