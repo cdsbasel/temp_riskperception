@@ -380,7 +380,7 @@ for (column in columns_to_check_study) {
   unique_values <- unique(df_edit[[column]])
   cat("Unique values in", column, ":", toString(unique_values), "\n")
 }
-#looks alright
+
 
 ##how_analyzed
 
@@ -531,8 +531,6 @@ df_edit <- df_edit %>%
 #   print(differing_rows)
 # }
 
-#i believe everything worked ---Amanda can you please check that as well?
-#since everything worked, transfer result to one dataframe and comment the code.For me everything looked good. 
 
 
 
@@ -724,7 +722,7 @@ unique_values <- unique(df_edit$domain)
 # Print or use the unique values as needed
 print(unique_values)
 
-# Assuming df_edit is your data frame
+
 values_with_other <- df_edit$domain[grep("other", df_edit$domain, ignore.case = TRUE)]
 
 # Print or inspect the values
@@ -752,7 +750,6 @@ df_edit <- df_edit %>%
       grepl("questionnaire validation", tolower(domain)),1,0))
 
 ##check if every row that has a value in domain, is represented in the new columns
-# Assuming df_edit is your data frame
 #columns_to_check <- c("health", "finance", "nature", "crime", "nuclear")
 
 # Create a new column indicating if all specified columns have non-missing values
@@ -765,7 +762,6 @@ df_edit <- df_edit %>%
 #print(all_rows_have_values)
 
 ####characteristics_sample:
-# Assuming df_edit is your data frame
 columns_to_check <- c("characteristics_sample_1", "characteristics_sample_2", "characteristics_sample_3", "characteristics_sample_4", "characteristics_sample_5")
 
 # Create a list to store unique values for each column
@@ -779,7 +775,7 @@ for (i in seq_along(columns_to_check)) {
   cat("Unique values in", column_name, ":", toString(unique_values), "\n")
 }
 
-# Assuming df_edit is your data frame
+
 df_edit <- df_edit %>%
   mutate(
     sample_category_1 = case_when(
@@ -836,7 +832,6 @@ df_edit <- df_edit %>%
 
 
 ##UNITS ASSESSED
-# Assuming df_edit is your data frame
 columns_to_check <- c("units_assessed_1", "units_assessed_2", "units_assessed_3", "units_assessed_4", "units_assessed_5")
 
 # Create a list to store unique values for each column
@@ -849,14 +844,14 @@ for (i in seq_along(columns_to_check)) {
   
   cat("Unique values in", column_name, ":", toString(unique_values), "\n")}
 
-# Assuming df_edit is your data frame
+
 df_edit <- df_edit %>%
   mutate_at(
     vars(units_assessed_1:units_assessed_5),
     funs(ifelse(
       grepl("likert|5- point scale|not serious at all – very serious| the responses were coded as accurate or an underestimate| 5-point categorical scale|4-point response categories| yes, no, don't know| 8-point liker scale|five-point scale:|great|moderate|small|no chance at all", ., ignore.case = TRUE),"likert scale",.)))
 
-# Assuming df_edit is your data frame
+
 df_edit <- df_edit %>%
   mutate_at(
     vars(units_assessed_1:units_assessed_5),
