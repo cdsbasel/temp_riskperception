@@ -742,7 +742,6 @@ print(values_with_other)
 #    social = ifelse(grepl("social anxiety|occupational|social media and online privacy #attitudes|social risk and prosocial tendencies|aggressive intergroup action", tolower(domain)),1,0))
 
 
-
 #DOMAIN: POLITICAL AND VALIDATION
 #df_edit <- df_edit %>%
 #  mutate(
@@ -751,15 +750,11 @@ print(values_with_other)
 #    validation = ifelse(
 #      grepl("questionnaire validation", tolower(domain)),1,0))
 
-df_edit$political <- as.integer(grepl("\\b(trust in politics|political,)\\b", df_edit$domain, ignore.case = TRUE))
 
-df_edit$validation <- as.integer(grepl("\\b(questionnaire validation,)\\b", df_edit$domain, ignore.case = TRUE))
-
-
-df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action,)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action)\\b", df_edit$domain, ignore.case = TRUE))
 
 # Create a new column 'health' based on conditions in 'domain'
-df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological|safety and hazard recognition|risk communication and decision-making during emergencies)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column finance based on conditions in domain
 df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
@@ -768,10 +763,14 @@ df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,
 df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column crime based on conditions in domain
-df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|assault,)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|assault)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column nuclear based on conditions in domain
-df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic|hazardous waste site,)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic|hazardous waste site)\\b", df_edit$domain, ignore.case = TRUE))
+
+df_edit$political <- as.integer(grepl("trust in politics|political", df_edit$domain, ignore.case = TRUE))
+
+df_edit$validation <- as.integer(grepl("validation", df_edit$domain, ignore.case = TRUE))
 
 
 
@@ -779,22 +778,6 @@ df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nu
 
 
 
-
-
-
-
-
-##check if every row that has a value in domain, is represented in the new columns
-#columns_to_check <- c("health", "finance", "nature", "crime", "nuclear")
-
-# Create a new column indicating if all specified columns have non-missing values
-#df_edit$all_columns_present <- complete.cases(df_edit[, columns_to_check])
-
-# Check if every row has a value in the specified columns
-#all_rows_have_values <- all(df_edit$all_columns_present)
-
-# Print the result
-#print(all_rows_have_values)
 
 ####characteristics_sample:
 columns_to_check <- c("characteristics_sample_1", "characteristics_sample_2", "characteristics_sample_3", "characteristics_sample_4", "characteristics_sample_5")
@@ -951,6 +934,19 @@ df_final <- df_edit[c(
   "lowest_age_1", "lowest_age_2", "lowest_age_3", "lowest_age_4", "lowest_age_5",
   "highest_age_1", "highest_age_2", "highest_age_3", "highest_age_4", "highest_age_5"
 )]
+
+##check if every row has at least one value in the domains.
+columns_to_check <- c('health', 'crime', 'validation', 'nature', 'finance', 'nuclear', 'political', 'social')
+
+# Convert the selected columns to numeric
+df_final[columns_to_check] <- lapply(df_final[columns_to_check], as.numeric)
+
+# Find rows where all specified columns have a value of 0
+rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), ]
+
+##it worked, every row has at least one domain
+
+
 
 ######analysis----------------
 
