@@ -729,19 +729,18 @@ values_with_other <- df_edit$domain[grep("other", df_edit$domain, ignore.case = 
 print(values_with_other)
 
 #edit domains 
-df_edit <- df_edit %>%
-  mutate(
-    health = ifelse(grepl("road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies", tolower(domain)), 1, 0),
-    nature = ifelse( grepl("climate change|forests", tolower(domain)),1, 0),
-    crime = ifelse( grepl("speeding|sexual assault", tolower(domain)),1, 0),
-    nuclear = ifelse(grepl("hazardous waste site", tolower(domain)),1, 0))
+#df_edit <- df_edit %>%
+#  mutate(
+#    health = ifelse(grepl("road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies", tolower(domain)), 1, 0),
+#    nature = ifelse( grepl("climate change|forests", tolower(domain)),1, 0),
+#    crime = ifelse( grepl("speeding|sexual assault", tolower(domain)),1, 0),
+#    nuclear = ifelse(grepl("hazardous waste site", tolower(domain)),1, 0))
 
 #DOMAIN: SOCIAL
 #df_edit <- df_edit %>%
 #  mutate(
 #    social = ifelse(grepl("social anxiety|occupational|social media and online privacy #attitudes|social risk and prosocial tendencies|aggressive intergroup action", tolower(domain)),1,0))
 
-df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action,)\\b", df_edit$domain, ignore.case = TRUE))
 
 
 #DOMAIN: POLITICAL AND VALIDATION
@@ -757,6 +756,7 @@ df_edit$political <- as.integer(grepl("\\b(trust in politics|political,)\\b", df
 df_edit$validation <- as.integer(grepl("\\b(questionnaire validation,)\\b", df_edit$domain, ignore.case = TRUE))
 
 
+df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action,)\\b", df_edit$domain, ignore.case = TRUE))
 
 # Create a new column 'health' based on conditions in 'domain'
 df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies)\\b", df_edit$domain, ignore.case = TRUE))
@@ -768,7 +768,7 @@ df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,
 df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column crime based on conditions in domain
-df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|sexual assault,)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|assault,)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column nuclear based on conditions in domain
 df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic|hazardous waste site,)\\b", df_edit$domain, ignore.case = TRUE))
@@ -928,7 +928,7 @@ df_final <- df_edit[c(
   "study_1", "study_2", "study_3", "study_4", "study_5",
   "intervention_yesno_1", "intervention_yesno_2", "intervention_yesno_3", "intervention_yesno_4", "intervention_yesno_5",
   "exposure_yesno_1", "exposure_yesno_2", "exposure_yesno_3", "exposure_yesno_4", "exposure_yesno_5",
-  "domain", "health", "validation", "nature", "finance", "nuclear", "political", "social",
+  "domain", "health", "validation", "nature", "crime", "finance", "nuclear", "political", "social",
   "temporal_analysis_1", "temporal_analysis_2", "temporal_analysis_3", "temporal_analysis_4", "temporal_analysis_5",
   "how_analyzed_1", "how_analyzed_2", "how_analyzed_3", "how_analyzed_4", "how_analyzed_5",
   "correlation_results_1", "correlation_results_1.1", "correlation_results_1.2", "correlation_results_1.3", "correlation_results_1.4",
