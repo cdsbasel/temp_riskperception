@@ -898,7 +898,10 @@ df_edit$item_number_1[126] <- NA
 df_edit$item_number_1[131] <- 4
 df_edit$item_number_1[141] <- NA
 df_edit$study_design[239] <- "serial cross-sectional"
-
+df_edit$units_assessed_1[72] <- "likert scale"
+df_edit$units_assessed_1[35] <- "likert scale"
+df_edit$units_assessed_1[132] <- "likert scale"
+df_edit$units_assessed_1[113] <- "likert scale"
 
 #make one finale dataset for the analysis 
 df_final <- df_edit[c(
@@ -946,150 +949,10 @@ rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), 
 
 ##it worked, every row has at least one domain
 
-
-
-######analysis----------------
-
-# Boxplot
-# Convert 'study_design' to factor
-df_final$study_design <- factor(df_final$study_design)
-
-library(ggplot2)
-
-ggplot(df_final, aes(x = factor(study_design))) +
-  geom_bar(fill = "lightblue", color = "black") +
-  labs(title = "Study Design", x = "2 designs", y = "Count")
-
-ggplot(df_final, aes(x = factor(type_participants_1))) +
-  geom_bar(fill = "lightblue", color = "black") +
-  labs(title = "Study Design", x = "2 designs", y = "Count")
-
-library(dplyr)
-
-# Filter the dataframe for 'experts' and 'laypeople'
-df_filtered <- df_final %>%
-  filter(type_participants_1 %in% c("experts", "laypeople"))
-
-# Create a bar plot
-ggplot(df_filtered, aes(x = factor(type_participants_1))) +
-  geom_bar(fill = "lightblue", color = "black") +
-  labs(title = "Study Design", x = "Participant Type", y = "Count")
-
-
-ggplot(df_final, aes(x = factor(age_category_1))) +
-  geom_bar(fill = "lightblue", color = "black") +
-  labs(title = "Study Design", x = "2 designs", y = "Count")
-
-# Filter the dataframe for 'experts' and 'laypeople'
-df_filtered1 <- df_final %>%
-  filter(age_category_1 %in% c("adults", "adolescents", "children", "older adults"))
-
-# Create a bar plot
-ggplot(df_filtered1, aes(x = factor(age_category_1))) +
-  geom_bar(fill = "lightblue", color = "black") +
-  labs(title = "age groups", x = "type", y = "Count")
-
-
-df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
-# Create a scatterplot
-ggplot(df_final, aes(x = mean_age_1, y = 0)) +
-  geom_point(position = position_jitter(width = 0.1), color = "blue") +
-  coord_cartesian(ylim = c(0, 100)) +
-  labs(title = "Scatterplot of Mean Age", x = "Mean Age", y = "Range")
-
-typeof(df_final$mean_age_1)
-
-df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
-
-plot(df_final$mean_age_1, main="Scatter Plot of mean_age_1", xlab="Index", ylab="mean_age_1")
-
-# Order the dataframe by the values in the 'mean_age_1' column
-df_final <- df_final[order(df_final$mean_age_1), ]
-
-# Plot a scatter plot
-plot(df_final$mean_age_1, main="Scatter Plot of mean_age_1", xlab="Index", ylab="mean_age_1")
-
-
-
-
-# Order the dataframe by the values in the 'mean_age_1' column
-df_final <- df_final %>% arrange(mean_age_1)
-
-ggplot(df_final, aes(x = seq_along(mean_age_1), y = mean_age_1)) +
-  geom_point() +
-  labs(title = "Scatter Plot of mean_age_1", x = "Index", y = "mean_age_1") +
-  scale_x_continuous(breaks = seq(1, 100, by = 10), labels = seq(1, 100, by = 10), limits = c(1, 100))
-
-library(viridis)
-
-# Create 10 bins for the x-axis
-df_final$bins <- cut(seq_along(df_final$mean_age_1), breaks = 10, labels = FALSE)
-
-# Plot using ggplot with histogram
-ggplot(df_final, aes(x = mean_age_1)) +
-  geom_histogram(bins = 10, fill = "", color = "black", alpha = 0.7) +
-  labs(title = "Histogram of mean_age_1", x = "mean_age_1", y = "Frequency")
-
-
-ggplot(df_final, aes(x = mean_age_1)) +
-  geom_histogram(bins = 10, fill = viridis(10)) +
-  scale_fill_viridis_c() +
-  labs(title = "Age", x = "mean age", y = "Frequency")
+write.csv(df_final, file = "Scoping_review/data/secondary/df_finale.csv")
 
 
 
 
 
-# Filter out rows with NA in the 'sample_category_1' column
-df_filtered <- df_final %>% filter(!is.na(sample_category_1))
 
-# Get counts for each category
-category_counts <- df_filtered %>% count(sample_category_1)
-
-# Plot using ggplot with a bar plot for categorical data
-ggplot(df_filtered, aes(x = reorder(sample_category_1, -category_counts$n), fill = sample_category_1)) +
-  geom_bar() +
-  scale_fill_viridis_d() +
-  labs(title = "Bar Plot of sample_category_1", x = "Sample Category", y = "Count") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
-
-
-
-
-
-# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
-df_filtered <- df_final %>% 
-  filter(!is.na(sample_category_1)) %>%
-  group_by(sample_category_1) %>%
-  filter(n() > 2) %>%
-  ungroup()
-
-# Get counts for each category and reorder the factor levels
-category_counts <- df_filtered %>% count(sample_category_1)
-df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
-
-# Plot using ggplot with a bar plot for categorical data
-ggplot(df_filtered, aes(x = sample_category_1)) +
-  geom_bar(fill = "skyblue", color = "black") +
-  labs(title = "Categories", x = "Sample Category", y = "Count") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
-
-
-
-
-# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
-df_filtered <- df_final %>% 
-  filter(!is.na(sample_category_1)) %>%
-  group_by(sample_category_1) %>%
-  filter(n() > 2) %>%
-  ungroup()
-
-# Get counts for each category and reorder the factor levels
-category_counts <- df_filtered %>% count(sample_category_1)
-df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
-
-# Plot using ggplot with a bar plot for categorical data and rainbow color scheme
-ggplot(df_filtered, aes(x = sample_category_1)) +
-  geom_bar(fill = viridis(10, option = "D")) +
-  labs(title = "Bar Plot of sample_category_1", x = "Sample Category", y = "Count") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
