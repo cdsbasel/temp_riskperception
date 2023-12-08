@@ -19,8 +19,10 @@ getwd()
 
 #####import data set-----------------
 #import data set
-df <- read_csv("Scoping_review/data/secondary/df_finale.csv")
+df_final <- read_csv("Scoping_review/data/secondary/df_final.csv")
 
+
+###### analysis -----------------
 
 # Boxplot
 # Convert 'study_design' to factor
@@ -61,14 +63,11 @@ ggplot(df_filtered1, aes(x = factor(age_category_1))) +
   labs(title = "age groups", x = "type", y = "Count")
 
 
-df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
-# Create a scatterplot
-ggplot(df_final, aes(x = mean_age_1, y = 0)) +
-  geom_point(position = position_jitter(width = 0.1), color = "blue") +
-  coord_cartesian(ylim = c(0, 100)) +
-  labs(title = "Scatterplot of Mean Age", x = "Mean Age", y = "Range")
+##### age ------------
 
-typeof(df_final$mean_age_1)
+
+df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
+
 
 df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
 
@@ -131,7 +130,7 @@ ggplot(df_final, aes(x = mean_age_1)) +
 
 
 
-
+######### puplation -------------
 
 
 # Filter out rows with NA in the 'sample_category_1' column
@@ -167,70 +166,8 @@ ggplot(df_filtered, aes(x = sample_category_1)) +
 
 
 
+#### domains-------------
 
-########Characteristic of Sample. Absolutly useless-----------------
-
-# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
-df_filtered <- df_final %>% 
-  filter(!is.na(sample_category_1)) %>%
-  group_by(sample_category_1) %>%
-  filter(n() > 2) %>%
-  ungroup()
-
-# Get counts for each category and reorder the factor levels
-category_counts <- df_filtered %>% count(sample_category_1)
-df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
-
-# Calculate median and mean based on counts
-median_value <- median(category_counts$n)
-mean_value <- mean(category_counts$n)
-
-# Plot using ggplot with a bar plot for categorical data and rainbow color scheme
-plot <- ggplot(df_filtered, aes(x = sample_category_1, fill = sample_category_1)) +
-  geom_bar() +
-  labs(title = "Bar Plot of sample_category_1", x = "Sample Category", y = "Count") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
-
-# Add horizontal lines for median and mean
-plot <- plot + geom_hline(yintercept = median_value, color = "red", linetype = "dashed", size = 1)  # Median line
-plot <- plot + geom_hline(yintercept = mean_value, color = "blue", linetype = "dashed", size = 1)  # Mean line
-
-# Annotate median and mean values
-plot <- plot + annotate("text", x = 0.5, y = c(1.1 * median_value, 1.1 * mean_value),
-                        label = c(paste("Median = ", round(median_value, 2)), paste("Mean = ", round(mean_value, 2))),
-                        color = c("red", "blue"), size = 3, hjust = 0)
-
-# Print the plot
-print(plot)
-
-
-
-
-
-
-
-
-# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
-df_filtered <- df_final %>% 
-  filter(!is.na(sample_category_1)) %>%
-  group_by(sample_category_1) %>%
-  filter(n() > 2) %>%
-  ungroup()
-
-# Get counts for each category and reorder the factor levels
-category_counts <- df_filtered %>% count(sample_category_1)
-df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
-
-# Plot using ggplot with a bar plot for categorical data and rainbow color scheme
-ggplot(df_filtered, aes(x = sample_category_1)) +
-  geom_bar(fill = viridis(10, option = "D")) +
-  labs(title = "Bar Plot of sample_category_1", x = "Sample Category", y = "Count") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
-
-library(ggplot2)
-library(tidyr)
-
-####domains plot
 # Function to create a single histogram for counts of 1
 create_combined_histogram <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
@@ -295,10 +232,8 @@ create_combined_rainbow_histogram(df_final)
 
 
 
-#####How was risk perception measured? 
+#####How was risk perception measured? -----------
 ###Look at the measured_1 column
-library(tidytext)
-library(ggplot2)
 
 # Convert 'measured_1' to a character vector
 df_final$measured_1 <- as.character(df_final$measured_1)
@@ -345,8 +280,7 @@ ggplot(units_counts, aes(x = reorder(units_assessed_1, n), y = n)) +
 
 
 
-###look at the item number. 
-library(tidyverse)
+###item number--------- 
 
 # Convert 'item_number_1' to numeric, handling non-numeric values gracefully
 df_final <- df_final %>%
@@ -421,14 +355,11 @@ ggplot(summary_df, aes(x = item_number_numeric, y = count)) +
   coord_cartesian(ylim = c(0, 60))
 
 
-library(dplyr)
-
-# Assuming df_final is your data frame
 summary_df <- df_final %>% 
   group_by(item_number_numeric) %>% 
   summarise(count = n())
 
-# Create a point plot
+# Create a point plot with more details in the description of the x-axis
 ggplot(summary_df, aes(x = item_number_numeric, y = count)) +
   geom_point(color = "black") +
   labs(title = "Item Number", x = "Item Number", y = "Frequency") +

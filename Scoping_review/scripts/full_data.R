@@ -949,7 +949,7 @@ rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), 
 
 ##it worked, every row has at least one domain
 
-write.csv(df_final, file = "Scoping_review/data/secondary/df_finale.csv")
+write.csv(df_final, file = "Scoping_review/data/secondary/df_final.csv")
 
 
 
