@@ -1,5 +1,5 @@
 ###last author: Arzie 
-### last date: 04.12.23
+### last date: 11.12.23
 
 #####Prep ------------------
 #load packages 
@@ -19,14 +19,14 @@ getwd()
 
 #####import data set-----------------
 #import data set
-df <- read_csv("Scoping_review/data/raw/raw_data.csv")
+df <- read_csv("data/raw.csv")
 
 #####rename column names ----------------------
 #look at variable names
 names(df)
 
 #create name list with the old and new names
-name_file <- read_csv("Scoping_review/scripts/name_list.csv")
+name_file <- read_csv("R/variable_name_list.csv")
 
 #create column new/old names list
 numbers = 1:15
@@ -76,9 +76,6 @@ df_rename <- df_rename %>%
 names(df_rename)
 
 
-# Write the data frame to a CSV file
-write.csv(df_rename, file = "Scoping_review/data/secondary/df_rename.csv")
-
 ####edit columns ------------------ 
 
 # Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name, study id and covidence created title
@@ -121,10 +118,6 @@ df_edit [186, 4] <- "This study investigated the reliability and validity of the
 #convert all character columns to lowercase, excluding "author" and "title"
 df_edit <- df_edit %>%
   mutate(across(where(is.character) & !matches(c("author", "title")), tolower))
-
-
-# Write the data frame to a CSV file
-write.csv(df_edit, file = "Scoping_review/data/secondary/df_edit.csv")
 
 
 #add design
@@ -949,10 +942,5 @@ rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), 
 
 ##it worked, every row has at least one domain
 
-write.csv(df_final, file = "Scoping_review/data/secondary/df_final.csv")
-
-
-
-
-
+write.csv(df_final, file = "data/final.csv")
 
