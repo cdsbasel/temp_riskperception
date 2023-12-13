@@ -891,6 +891,7 @@ df_edit$item_number_1[126] <- NA
 df_edit$item_number_1[131] <- 4
 df_edit$item_number_1[141] <- NA
 df_edit$study_design[239] <- "serial cross-sectional"
+df_edit$study_design[155] <- "serial cross-sectional"
 df_edit$units_assessed_1[72] <- "likert scale"
 df_edit$units_assessed_1[35] <- "likert scale"
 df_edit$units_assessed_1[132] <- "likert scale"

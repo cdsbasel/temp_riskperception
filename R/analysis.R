@@ -19,7 +19,7 @@ getwd()
 
 #####import data set-----------------
 #import data set
-df_final <- read_csv("Scoping_review/data/secondary/df_final.csv")
+df_final <- read_csv("data/final.csv")
 
 
 ###### analysis -----------------
@@ -104,8 +104,6 @@ ggplot(df_final, aes(x = mean_age_1)) +
 
 
 
-
-
 # Calculate median and mean, excluding NA values
 median_value <- median(df_final$mean_age_1, na.rm = TRUE)
 mean_value <- mean(df_final$mean_age_1, na.rm = TRUE)
@@ -167,69 +165,6 @@ ggplot(df_filtered, aes(x = sample_category_1)) +
 
 
 #### domains-------------
-
-# Function to create a single histogram for counts of 1
-create_combined_histogram <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "variable", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Plotting the histogram using ggplot2
-  ggplot(df_long, aes(x = variable)) +
-    geom_bar(stat = "count", fill = "skyblue", color = "black") +
-    labs(x = "Categories", y = "Counts", title = "domains")
-}
-
-# Apply the function to df_final
-create_combined_histogram(df_final)
-
-
-##ad to the domain the study_design 
-# Function to create a single histogram for counts of 1
-create_combined_histogram <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "variable", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Plotting the histogram using ggplot2
-  ggplot(df_long, aes(x = variable, fill = study_design)) +
-    geom_bar(stat = "count", position = "stack", color = "black") +
-    labs(x = "Categories", y = "Counts", title = "Domains") +
-    scale_fill_manual(values = c("serial cross-sectional" = "lightpink", "longitudinal" = "lightblue"))
-}
-
-# Apply the function to df_final
-create_combined_histogram(df_final)
-
-
-
-
-
-# Function to create a single histogram for counts of 1 with rainbow colors
-create_combined_rainbow_histogram <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "variable", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Plotting the histogram using ggplot2 with rainbow colors
-  ggplot(df_long, aes(x = variable)) +
-    geom_bar(stat = "count", fill = rainbow(length(unique(df_long$variable))), color = "black") +
-    labs(x = "Categories", y = "Count of 1", title = "Combined Histogram of 1 Counts in Different Categories (Rainbow Colors)")
-}
-
-# Apply the function to df_final
-create_combined_rainbow_histogram(df_final)
-
-
 
 
 #####How was risk perception measured? -----------
@@ -377,4 +312,180 @@ ggplot(summary_df, aes(x = item_number_numeric, y = count)) +
   coord_cartesian(ylim = c(0, 60)) +
   # Display every number on the x-axis
   scale_x_continuous(breaks = unique(summary_df$item_number_numeric))
+
+
+##create one column for time interval------
+
+
+# Combine columns into a new column
+df_final <- df_final %>%
+  mutate(time_interval = paste(df_final$`test-retest_interval_1`, df_final$temporal_trend_interval_1, df_final$mean_difference_interval_1, sep = "_"))
+
+
+# Assuming df_final is your data frame
+df_final$time_interval <- as.numeric(gsub("[^0-9]", "", df_final$time_interval))
+
+# Replace non-numeric values with NA
+df_final$time_interval[is.na(df_final$time_interval)] <- NA
+
+### create a plot for it. 
+
+# Convert 'time_interval' column to numeric
+df_final$time_interval <- as.numeric(df_final$time_interval)
+
+# Create a scatterplot with ggplot2
+ggplot(df_final, aes(x = rownames(df_final), y = time_interval)) +
+  geom_point(col = "blue", pch = 16) +
+  labs(title = "Scatterplot of Time Interval by Row",
+       x = "Row Indices", y = "Time Interval")
+
+plot(df_final$time_interval)
+
+print(df_final$time_interval)
+
+# Assuming df_final is your data frame
+# Assuming time_interval column is loaded as character and contains numeric values or NAs
+
+library(ggplot2)
+
+# Convert 'time_interval' column to numeric
+df_final$time_interval <- as.numeric(df_final$time_interval)
+
+# Order the dataframe by the 'time_interval' column
+df_final_ordered <- df_final[order(df_final$time_interval), ]
+
+# Create a scatterplot with ggplot2
+ggplot(df_final_ordered, aes(x = seq_along(time_interval), y = time_interval, color = is.na(time_interval))) +
+  geom_point(pch = 16) +
+  labs(title = "Scatterplot of Time Interval by Row",
+       x = "Row Indices", y = "Time Interval") +
+  scale_color_manual(values = c("black", "red"), guide = FALSE) +
+  ylim(1, 1100) + xlim(1, 120)
+
+
+
+
+
+
+##############Questions----------
+
+
+####How can the variation in domains be characterized, and what research designs were implemented for studies within each domain, drawing comparisons with papers that investigated temporal trends?
+
+#In the studies exploring temporal trends, what is the observed variation in domains, and how does the choice of research designs for each domain compare to those employed in papers specifically analyzing temporal trends?
+  
+#To what degree do variations in domains influence the selection of research designs in studies, and how does this compare to the research designs utilized in papers investigating temporal trends?
+  
+
+
+# Function to create a single histogram for counts of 1
+create_combined_histogram <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    pivot_longer(cols = columns_of_interest, names_to = "variable", values_to = "value") %>%
+    group_by(variable, study_design, temporal_analysis_1) %>%
+    summarize(count = sum(value == 1))
+  
+  # Plotting the histogram using ggplot2
+  ggplot(df_long, aes(x = variable, y = count, fill = interaction(as.factor(temporal_analysis_1), study_design))) +
+    geom_bar(stat = "identity", position = "stack") +
+    labs(x = "Categories", y = "Counts", title = "Domains") +
+    scale_fill_manual(values = c("0.serial cross-sectional" = "lightpink", 
+                                 "0.longitudinal" = "pink",  # Same color as the first group
+                                 "1.serial cross-sectional" = "blue",
+                                 "1.longitudinal" = "darkblue"),  # Same color as the first group
+                      name = "Temporal Analysis and Study Design")
+}
+
+# Apply the function to df_final
+create_combined_histogram(df_final)
+
+
+# List of columns to process
+columns_of_interest <- c('health', 'finance', 'political', 'validation', 'crime', 'nature', 'nuclear', 'social')
+
+# Iterate through each column to create a new column
+for (col in columns_of_interest) {
+  df_final[[paste0(col, "_1")]] <- ifelse(df_final[[col]] == 1 & df_final$temporal_analysis_1 == 1, 1, 0)
+}
+
+
+
+
+# Function to create a single histogram for counts of 1
+create_combined_histogram <- function(df) {
+  columns_of_interest <- c('health', 'health_1', 'finance','finance_1', 'political', 'political_1', 'validation', 'validation_1','crime', 'crime_1', 'nature', 'nature_1','nuclear', 'nuclear_1','social', 'social_1')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "variable", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the histogram using ggplot2
+  ggplot(df_long, aes(x = variable, fill = study_design)) +
+    geom_bar(stat = "count", position = "stack", color = "black") +
+    labs(x = "Categories", y = "Counts", title = "Domains") +
+    scale_fill_manual(values = c("serial cross-sectional" = "lightpink", "longitudinal" = "lightblue")) +
+    theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Adjust the angle and hjust as needed
+}
+
+# Apply the function to df_final
+create_combined_histogram(df_final)
+
+
+#####How does the researched population look like and is there a difference between the papers which analyzed the temporal trend?
+
+#To what extent do variations exist in the demographic composition of the researched population, and are discernible differences apparent among papers analyzing temporal trends?
+  
+#maybe one plot where slide 16 and 17 are combined. Next to each bar is the bar which only includes studies where the temporal trend was analized. 
+
+
+# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
+df_filtered <- df_final %>% 
+  filter(!is.na(sample_category_1)) %>%
+  group_by(sample_category_1) %>%
+  filter(n() > 2) %>%
+  ungroup()
+
+# Get counts for each category and reorder the factor levels
+category_counts <- df_filtered %>% count(sample_category_1)
+df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
+
+# Plot using ggplot with a bar plot for categorical data
+ggplot(df_filtered, aes(x = sample_category_1)) +
+  geom_bar(fill = "skyblue", color = "black") +
+  labs(title = "Categories", x = "Sample Category", y = "Count") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+
+
+
+
+
+# Filter out rows with NA and counts <= 2 in the 'sample_category_1' column
+df_filtered <- df_final %>% 
+  filter(!is.na(sample_category_1)) %>%
+  group_by(sample_category_1, type_participants_1) %>%
+  filter(n() > 2) %>%
+  ungroup()
+
+# Get counts for each category and reorder the factor levels
+category_counts <- df_filtered %>% count(sample_category_1)
+df_filtered$sample_category_1 <- factor(df_filtered$sample_category_1, levels = category_counts$sample_category_1[order(-category_counts$n)])
+
+# Plot using ggplot with a stacked bar plot for categorical data and fill by 'type_participants_1'
+ggplot(df_filtered, aes(x = sample_category_1, fill = type_participants_1)) +
+  geom_bar(stat = "count", color = "black") +
+  labs(title = "Categories", x = "Sample Category", y = "Count") +
+  scale_fill_manual(values = c("laypeople" = "lightpink", "experts" = "lightblue")) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  # Rotate x-axis labels for better readability
+
+
+
+####From the available data, what indications or patterns emerge regarding the overall trend?
+
+
+
 
