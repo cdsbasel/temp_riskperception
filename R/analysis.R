@@ -485,7 +485,18 @@ ggplot(df_filtered, aes(x = sample_category_1, fill = type_participants_1)) +
 
 
 ####From the available data, what indications or patterns emerge regarding the overall trend?
+print(df_final$correlation_results_1)
 
+library(ggplot2)
 
+# Assuming df_final is your data frame
+# Replace "correlation_results_1" with the actual column name from your data frame
 
+ggplot(df_final, aes(x = correlation_results_1, y = ..density..)) +
+  geom_histogram(binwidth = 0.1, fill = "skyblue", color = "black", alpha = 0.7) +
+  geom_density(color = "blue") +
+  labs(title = "Histogram with Density Curve",
+       x = "correlation_results_1",
+       y = "Density") +
+  theme_minimal()
 
