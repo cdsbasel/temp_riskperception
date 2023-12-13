@@ -654,6 +654,26 @@ new_df$correlation_results_1.8[83] <- "0.54"
 new_df$correlation_results_1[215] <- "-0.3784"
 new_df$correlation_results_1[161] <- "-0.19"
 
+new_df$correlation_results_1[42] <- "0.55"
+new_df$correlation_results_1[203] <- "0.815"
+new_df$correlation_results_1[70] <- "0.74"
+new_df$correlation_results_1[74] <- "0.71"
+new_df$correlation_results_1[102] <- "0.68"
+new_df$correlation_results_1[75] <- "0.58"
+new_df$correlation_results_1[122] <- "0.42"
+new_df$correlation_results_1[76] <- "0.97"
+new_df$correlation_results_1[132] <- "0.88"
+new_df$correlation_results_1[13] <- "0.87"
+new_df$correlation_results_1[218] <- "0.86"
+new_df$correlation_results_1[221] <- "0.71"
+new_df$correlation_results_1[201] <- "0.68"
+new_df$correlation_results_1[205] <- " 0.63"
+new_df$correlation_results_1[237] <- "0.97"
+new_df$correlation_results_1[186] <- "0.83"
+new_df$correlation_results_1[238] <- "0.91"
+
+
+
 
 #add the dataframe back
 new_df_subset <- new_df[, !grepl("test-retest", names(new_df))]
