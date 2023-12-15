@@ -759,15 +759,13 @@ print(values_with_other)
 #df_edit <- df_edit %>%
 #  mutate(
 #    political = ifelse(
-#      grepl("trust in politics|political", tolower(domain)),1,0),
-#    validation = ifelse(
-#      grepl("questionnaire validation", tolower(domain)),1,0))
+#      grepl("trust in politics|political", tolower(domain)),1,0))
 
 
 df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action)\\b", df_edit$domain, ignore.case = TRUE))
 
 # Create a new column 'health' based on conditions in 'domain'
-df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological|safety and hazard recognition|risk communication and decision-making during emergencies)\\b", df_edit$domain, ignore.case = TRUE))
+df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological|safety and hazard recognition|risk communication and decision-making during emergencies |validation)\\b", df_edit$domain, ignore.case = TRUE))
 
 #create a new column finance based on conditions in domain
 df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
@@ -783,7 +781,7 @@ df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nu
 
 df_edit$political <- as.integer(grepl("trust in politics|political", df_edit$domain, ignore.case = TRUE))
 
-df_edit$validation <- as.integer(grepl("validation", df_edit$domain, ignore.case = TRUE))
+
 
 
 
@@ -928,7 +926,7 @@ df_final <- df_edit[c(
   "study_1", "study_2", "study_3", "study_4", "study_5",
   "intervention_yesno_1", "intervention_yesno_2", "intervention_yesno_3", "intervention_yesno_4", "intervention_yesno_5",
   "exposure_yesno_1", "exposure_yesno_2", "exposure_yesno_3", "exposure_yesno_4", "exposure_yesno_5",
-  "domain", "health", "validation", "nature", "crime", "finance", "nuclear", "political", "social",
+  "domain", "health", "nature", "crime", "finance", "nuclear", "political", "social",
   "temporal_analysis_1", "temporal_analysis_2", "temporal_analysis_3", "temporal_analysis_4", "temporal_analysis_5",
   "how_analyzed_1", "how_analyzed_2", "how_analyzed_3", "how_analyzed_4", "how_analyzed_5",
   "correlation_results_1", "correlation_results_1.1", "correlation_results_1.2", "correlation_results_1.3", "correlation_results_1.4",
@@ -953,7 +951,7 @@ df_final <- df_edit[c(
 )]
 
 ##check if every row has at least one value in the domains.
-columns_to_check <- c('health', 'crime', 'validation', 'nature', 'finance', 'nuclear', 'political', 'social')
+columns_to_check <- c('health', 'crime', 'nature', 'finance', 'nuclear', 'political', 'social')
 
 # Convert the selected columns to numeric
 df_final[columns_to_check] <- lapply(df_final[columns_to_check], as.numeric)
