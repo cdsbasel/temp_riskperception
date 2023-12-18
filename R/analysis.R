@@ -127,7 +127,22 @@ ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, co
   geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Add a linear regression line
   scale_color_manual(values = c("0" = "black", "1" = "red"), name = "Health") +  # Specify color for health values and set legend title
   theme_minimal() +  # Minimal theme
-  labs(x = "Time Interval", y = "Correlation Results", title = NULL)
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)
+
+
+# Create a scatter plot with a correlation line
+ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
+  geom_point() +  # Scatter plot
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Add a linear regression line
+  scale_color_manual(values = c("0" = "black", "1" = "red"), name = "Health") +  # Specify color for health values and set legend title
+  theme(
+    panel.background = element_rect(fill = "white"),  # Set background color to white
+    panel.grid.major = element_blank(),  # Remove major grid lines
+    panel.grid.minor = element_blank(),  # Remove minor grid lines
+    axis.line = element_line(color = "black"),  # Set axis line color
+    legend.position = "bottom"  # Position legend at the bottom
+  ) +
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)
 
 
 ##density plots----- 
