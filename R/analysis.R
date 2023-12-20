@@ -234,7 +234,7 @@ create_stacked_density_plots <- function(df) {
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
     labs(x = "Times Measured", y = "Density", title = NULL) +  # Set labels
-    xlim(0, 30)  # Set x-axis limits
+    xlim(2, 10)  # Set x-axis limits
 }
 
 # Apply the function to df_final
@@ -266,11 +266,50 @@ create_stacked_density_plots <- function(df) {
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
     labs(x = "sample size", y = "Density", title = NULL) +  # Set labels
-    xlim(0, 2000)  # Set x-axis limits
+    xlim(0, 1000)  # Set x-axis limits
 }
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+
+
+###create a density plot for days apart between the measurement------
+# Create a new column by combining values from the three columns
+df_final <- df_final %>%
+  mutate(combined_column = paste(`test-retest_interval_1`, `temporal_trend_interval_1`, `mean_difference_interval_1`, sep = "_"))
+# Remove non-numeric characters from the combined_column
+df_final$combined_column <- gsub("[^0-9.]", "", df_final$combined_column)
+
+# Convert the combined_column to numeric
+df_final$combined_column <- as.numeric(df_final$combined_column)
+
+
+# Function to create stacked density plots for each category
+create_stacked_density_plots <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "category", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the stacked density plots using ggplot2
+  ggplot(df_long, aes(x = combined_column, fill = category)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
+    scale_fill_manual(values = c(
+      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
+      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
+    )) +  # Specify colors for each category
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
+    labs(x = "Time interval", y = "Density", title = NULL) +  # Set labels
+    xlim(2, 1000)  # Set x-axis limits
+}
+
+# Apply the function to df_final
+create_stacked_density_plots(df_final)
+
 
 
 
