@@ -700,8 +700,6 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
   xlim(0, 800)
 
 
-library(ggplot2)
-
 # Calculate correlation coefficient
 correlation_coefficient <- cor(correlation$correlation_interval_1, correlation$correlation_results)
 
@@ -713,10 +711,13 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
            label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
            color = "blue", size = 4) +  # Add correlation coefficient annotation
   labs(x = "Correlation Interval", y = "Correlation Results") +
-  xlim(0, 800)
+  xlim(0, 800) +
+  theme(panel.background = element_rect(fill = "white"))  # Set background color to white
 
 
 ####minimal indication that over time the correlation coefficient decreases. 
+
+
 
 
 
