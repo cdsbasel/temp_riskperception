@@ -22,9 +22,9 @@ getwd()
 df_final <- read_csv("data/final.csv")
 
 
-###### analysis -----------------
+# analysis visual -----------------
 
-###plot domain with study design--------
+###plot domains with study design--------
 
 # Function to create a single horizontal bar plot for counts of 1
 create_combined_horizontal_bar <- function(df) {
@@ -87,8 +87,6 @@ create_combined_horizontal_bar <- function(df) {
 create_combined_horizontal_bar(df_final)
 
 
-
-
 ##make the bars a 100 percent. And not count anymore
 
 create_combined_horizontal_bar <- function(df) {
@@ -145,7 +143,7 @@ create_combined_horizontal_bar(df_final)
 
 
 
-# how measured (scale, single item, etc.)
+#### how measured (scale, single item, etc.)-----
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -320,12 +318,7 @@ ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, co
 
 
 ##density plots----- 
-#number of studies
-
-
-
-# Load necessary libraries
-library(ggplot2)
+###number of studies----
 
 # Function to create separate density plots for each category
 create_separate_density_plots <- function(df) {
@@ -354,9 +347,8 @@ create_separate_density_plots <- function(df) {
 create_separate_density_plots(df_final)
 
 
-# Load necessary libraries
-library(ggplot2)
 
+###measurment points ----
 # Function to create stacked density plots for each category
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -483,10 +475,7 @@ create_stacked_density_plots <- function(df) {
 create_stacked_density_plots(df_final)
 
 
-
-
-#####to do list density plots 
-# publishing year
+### publishing year---
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -513,9 +502,7 @@ create_stacked_density_plots(df_final)
 
 
 
-
-
-# item number
+###item number----
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -543,7 +530,7 @@ create_stacked_density_plots_item(df_final)
 
 
 
-# time measured 
+###time measured----
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -571,7 +558,7 @@ create_stacked_density_plots_item(df_final)
 
 
 
-# female male
+###female male----
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -600,7 +587,7 @@ create_stacked_density_plots_item(df_final)
 
 
 
-# age (age and age category)
+###age (age and age category)----
 # Convert the column to numeric
 df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
 create_stacked_density_plots_item <- function(df) {
@@ -629,16 +616,120 @@ create_stacked_density_plots_item <- function(df) {
 create_stacked_density_plots_item(df_final)
 
 
+#correlation plot (correlation&time interval)----
+
+##create a dataframe with all the correlations for a better overview.---- 
 
 
-#
-#
-#
-#
-#
-#
-#
-#
+# Combine the correlation results columns into one
+correlation_results <- c(df_final$correlation_results_1, df_final$correlation_results_1.1,
+                         df_final$correlation_results_1.2, df_final$correlation_results_1.3,
+                         df_final$correlation_results_1.4, df_final$correlation_results_1.5,
+                         df_final$correlation_results_1.6, df_final$correlation_results_1.7,
+                         df_final$correlation_results_1.8)
+
+# Create a dataframe with two columns: correlation_results and test_retest_interval_1
+correlation_1 <- data.frame(correlation_results, `test-retest_interval_1` = df_final$`test-retest_interval_1`)
+
+colnames(correlation_1) <- c("correlation_results", "correlation_interval_1")
+
+# Remove rows with NAs from correlation dataframe
+correlation_1 <- na.omit(correlation_1)
+
+
+
+# Combine the correlation_2 results columns into one
+correlation_results <- c(df_final$correlation_results_2)
+
+# Create a dataframe with two columns: correlation_results and test_retest_interval_1
+correlation_2 <- data.frame(correlation_results, `test-retest_interval_2` = df_final$`test-retest_interval_2`)
+
+colnames(correlation_2) <- c("correlation_results", "correlation_interval_1")
+
+correlation_2 <- na.omit(correlation_2)
+
+
+
+# Combine the correlation_3 results columns into one
+correlation_results <- c(df_final$correlation_results_3)
+
+# Create a dataframe with two columns: correlation_results and test_retest_interval_1
+correlation_3 <- data.frame(correlation_results, `test-retest_interval_3` = df_final$`test-retest_interval_3`)
+
+colnames(correlation_3) <- c("correlation_results", "correlation_interval_1")
+
+correlation_3 <- na.omit(correlation_3)
+
+
+
+# Combine the correlation_4 results columns into one
+correlation_results <- c(df_final$correlation_results_4)
+
+# Create a dataframe with two columns: correlation_results and test_retest_interval_1
+correlation_4 <- data.frame(correlation_results, `test-retest_interval_4` = df_final$`test-retest_interval_4`)
+
+colnames(correlation_4) <- c("correlation_results", "correlation_interval_1")
+
+correlation_4 <- na.omit(correlation_4)
+
+
+
+# Combine the correlation_5 results columns into one
+correlation_results <- c(df_final$correlation_results_5)
+
+# Create a dataframe with two columns: correlation_results and test_retest_interval_1
+correlation_5 <- data.frame(correlation_results, `test-retest_interval_5` = df_final$`test-retest_interval_5`)
+
+colnames(correlation_5) <- c("correlation_results", "correlation_interval_1")
+
+correlation_5 <- na.omit(correlation_5)
+
+
+
+# Assuming correlation_2 has the same structure as correlation (two columns: correlation_results and correlation_interval_1)
+correlation <- rbind(correlation_1, correlation_2, correlation_3, correlation_4, correlation_5 )
+
+
+###plot----
+
+# Plot the two columns against each other with x-axis limited to 800 and a correlation line
+ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") + # Add correlation line
+  labs(x = "Correlation Interval", y = "Correlation Results") +
+  xlim(0, 800)
+
+
+library(ggplot2)
+
+# Calculate correlation coefficient
+correlation_coefficient <- cor(correlation$correlation_interval_1, correlation$correlation_results)
+
+# Plot the two columns against each other with x-axis limited to 800 and a correlation line
+ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") + # Add correlation line
+  annotate("text", x = 400, y = max(correlation$correlation_results) * 0.9, 
+           label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+           color = "blue", size = 4) +  # Add correlation coefficient annotation
+  labs(x = "Correlation Interval", y = "Correlation Results") +
+  xlim(0, 800)
+
+
+####minimal indication that over time the correlation coefficient decreases. 
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
