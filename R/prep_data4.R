@@ -19,7 +19,7 @@ getwd()
 
 #####import data set-----------------
 #import data set
-df <- read_csv("data/raw3.csv")
+df <- read_csv("data/raw4.csv")
 
 #####rename column names ----------------------
 #look at variable names
@@ -681,7 +681,7 @@ df_edit$correlation_results_1[205] <- "0.63"
 df_edit$correlation_results_1[237] <- "0.97"
 df_edit$correlation_results_1[186] <- "0.83"
 df_edit$correlation_results_1[238] <- "0.91"
-df_edit$correlation_results_1[207] <- ""
+
 
 
 
@@ -713,6 +713,8 @@ new_dataframe[] <- lapply(new_dataframe, function(x) gsub("[^0-9.,-]+", "", x))
 # Add the relevant columns from 'new_dataframe' back to 'df_edit'
 df_edit <- cbind(df_edit, new_dataframe[, c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")])
 
+df_edit$correlation_results_1[89] <- "0.78"
+df_edit$ICC_results_1[89] <- "0.83"
 
 #add all the missing sample sizes. 
 df_edit$sample_size_1[24] <- 359
@@ -807,7 +809,6 @@ for (i in seq_along(columns_to_check)) {
 }
 
 
-
 categorize_samples <- function(characteristics_sample) {
   case_when(
     grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample, ignore.case = TRUE) ~ "Workers",
@@ -821,14 +822,9 @@ categorize_samples <- function(characteristics_sample) {
   )
 }
 
-
-for (i in 1:5) {
-  df_edit <- df_edit %>%
-    mutate(
-      !!paste0("sample_category_", i) := categorize_samples(!!sym(paste0("characteristics_sample_", i)))
-    ) %>%
-    select(-one_of(paste0("characteristics_sample_", i)))
-}
+df_edit[paste0("sample_category_", 1:5)] <- lapply(1:5, function(i) {
+  categorize_samples(df_edit[[paste0("characteristics_sample_", i)]])
+})
 
 
 #lower case letters for the new columns 
@@ -836,7 +832,6 @@ df_edit <- df_edit %>%
   mutate_at(
     vars(sample_category_1:sample_category_5),
     funs(tolower(.)))
-
 
 ##UNITS ASSESSED
 columns_to_check <- c("units_assessed_1", "units_assessed_2", "units_assessed_3", "units_assessed_4", "units_assessed_5")
@@ -941,3 +936,15 @@ rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), 
 
 write.csv(df_final, file = "data/final.csv")
 
+##merge created files with unique id codes (abstract df and final df)--------------
+
+df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
+
+df_final_codes <- read_csv("data/df_final_codes.csv")
+
+merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
+
+final <- merged_df %>%
+  select(-codes, -Title, -Authors, -`Published Year`)
+
+write.csv(final, file = "data/final.csv")
