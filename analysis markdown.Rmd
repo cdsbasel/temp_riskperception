@@ -1,6 +1,11 @@
+---
+title: "analysis"
+author: "Amanda Holzer"
+date: "2024-02-24"
+output: html_document
+---
 
-
-
+```{r setup, include=FALSE}
 #####Prep ------------------
 #load packages 
 #install.packages("dplyr")
@@ -15,18 +20,20 @@ library(ggplot2)
 #set working directory
 setwd(here())
 getwd()
+```
 
 
-#####import data set-----------------
-#import data set
+Import the data set
+```{r}
 df_final <- read_csv("data/final.csv")
+```
 
 
-# analysis visual -----------------
 
-###plot domains with study design--------
-
-# Function to create a single horizontal bar plot for counts of 1
+## analysis visual
+plot domains with study design
+Function to create a single horizontal bar plot for counts of 1
+```{r}
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -50,12 +57,13 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
 
 
-###plot domain with measurement points-----
-#create measurement category with 2, 3, and 3+
-
+plot domain with measurement points
+create measurement category with 2, 3, and 3+
+```{r}
 # Assuming df_final already exists and you want to modify it
 df_final <- df_final %>%
   mutate(measure = ifelse(times_measured_1 == 2, "2",
@@ -85,10 +93,12 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
 
-##make the bars a 100 percent. And not count anymore
 
+make the bars a 100 percent. And not count anymore
+```{r}
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -113,8 +123,10 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
-## to do list other plots 
+
+```{r}
 #kind of risk (risk, concern, worry)
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -139,10 +151,10 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
 
-
-
+```{r}
 #### how measured (scale, single item, etc.)-----
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -167,8 +179,10 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
 
+```{r}
 #exposure and intervention
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -204,14 +218,10 @@ create_combined_horizontal_bar <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
+```
 
 
-
-# how analyzed 
-# significance and not signifcance. are they domain dependend? 
-# country
-# sd of age
-# highest age and lowest age????
+```{r}
 # temporal analysis 
 create_combined_horizontal_bar_temporal <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -243,7 +253,10 @@ create_combined_horizontal_bar_temporal <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar_temporal(df_final)
+```
 
+
+```{r}
 # data availability
 # Create a new column data_availability_1
 df_final$data_availability_1 <- as.integer(!is.na(df_final$data_availability) & df_final$data_availability != "")
@@ -275,20 +288,24 @@ create_combined_horizontal_bar_data <- function(df) {
 
 # Apply the function to df_final
 create_combined_horizontal_bar_data(df_final)
+```
 
 
 
-####correlation plotting with time interval 
-
+correlation plotting with time interval
+```{r}
 # Create a scatter plot with a correlation line
 ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
   geom_point() +  # Scatter plot
   geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Add a linear regression line
   scale_color_manual(values = c("0" = "black", "1" = "red"), name = "Health") +  # Specify color for health values and set legend title
   theme_minimal() +  # Minimal theme
-  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)+
+  ylim(0,1)
+```
 
 
+```{r}
 # Create a scatter plot with a correlation line
 ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
   geom_point() +  # Scatter plot
@@ -301,25 +318,15 @@ ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, co
     axis.line = element_line(color = "black"),  # Set axis line color
     legend.position = "bottom"  # Position legend at the bottom
   ) +
-  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)+
+  ylim(0,1)
+```
 
 
 
-##to do list correlations
-# correlation x publishing year
-# correlation x time interval
-# correlation x domain (look into the subdomains)
-# correlation x (group size)
-# correlation x data availability (put the da into another plot to look how they influence the points. or to look if the correlation line changes if we only include these ones.) 
-# correlation with age. 
-#do all the things above also with the icc  
-
-
-
-
-##density plots----- 
-###number of studies----
-
+density plots
+number of studies
+```{r}
 # Function to create separate density plots for each category
 create_separate_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -345,10 +352,12 @@ create_separate_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_separate_density_plots(df_final)
+```
 
 
 
-###measurment points ----
+measurment points
+```{r}
 # Function to create stacked density plots for each category
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -374,10 +383,10 @@ create_stacked_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+```
 
 
-
-
+```{r}
 # Function to create stacked density plots for each category
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -403,13 +412,10 @@ create_stacked_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+```
 
 
-
-
-
-
-
+```{r}
 # Function to create stacked density plots for each category
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -435,9 +441,12 @@ create_stacked_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+```
 
 
-###create a density plot for days apart between the measurement------
+
+create a density plot for days apart between the measurement
+```{r}
 # Create a new column by combining values from the three columns
 df_final <- df_final %>%
   mutate(combined_column = paste(`test-retest_interval_1`, `temporal_trend_interval_1`, `mean_difference_interval_1`, sep = "_"))
@@ -473,9 +482,11 @@ create_stacked_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+```
 
 
-### publishing year---
+publishing year
+```{r}
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -499,10 +510,10 @@ create_stacked_density_plots <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
+```
 
-
-
-###item number----
+item number
+```{r}
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -527,10 +538,11 @@ create_stacked_density_plots_item <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots_item(df_final)
+```
 
 
-
-###time measured----
+time measured
+```{r}
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -555,10 +567,11 @@ create_stacked_density_plots_item <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots_item(df_final)
+```
 
 
-
-###female male----
+female male
+```{r}
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -583,11 +596,10 @@ create_stacked_density_plots_item <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots_item(df_final)
+```
 
-
-
-
-###age (age and age category)----
+age (age and age category)
+```{r}
 # Convert the column to numeric
 df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
 create_stacked_density_plots_item <- function(df) {
@@ -614,13 +626,13 @@ create_stacked_density_plots_item <- function(df) {
 
 # Apply the function to df_final
 create_stacked_density_plots_item(df_final)
+```
 
 
-#correlation plot (correlation&time interval)----
+correlation plot (correlation&time interval)
+create a dataframe with all the correlations for a better overview.
 
-##create a dataframe with all the correlations for a better overview.---- 
-
-
+```{r}
 # Combine the correlation results columns into one
 correlation_results <- c(df_final$correlation_results_1, df_final$correlation_results_1.1,
                          df_final$correlation_results_1.2, df_final$correlation_results_1.3,
@@ -688,10 +700,11 @@ correlation_5 <- na.omit(correlation_5)
 
 # Assuming correlation_2 has the same structure as correlation (two columns: correlation_results and correlation_interval_1)
 correlation <- rbind(correlation_1, correlation_2, correlation_3, correlation_4, correlation_5 )
+```
 
 
-###plot----
-
+plot
+```{r, warning=FALSE}
 # Plot the two columns against each other with x-axis limited to 800 and a correlation line
 ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
   geom_point() +
@@ -699,8 +712,10 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
   labs(x = "Correlation Interval", y = "Correlation Results") +
   xlim(0, 800) +
   ylim(0,1)
+```
 
 
+```{r, warning=FALSE}
 # Calculate correlation coefficient
 correlation_coefficient <- cor(correlation$correlation_interval_1, correlation$correlation_results)
 
@@ -721,20 +736,5 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+```
 

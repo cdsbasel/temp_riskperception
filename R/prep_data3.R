@@ -681,7 +681,8 @@ df_edit$correlation_results_1[205] <- "0.63"
 df_edit$correlation_results_1[237] <- "0.97"
 df_edit$correlation_results_1[186] <- "0.83"
 df_edit$correlation_results_1[238] <- "0.91"
-df_edit$correlation_results_1[207] <- ""
+df_edit$correlation_results_1[27] <- "-0.6188"
+df_edit$correlation_results_1[39] <- "0.815"
 
 
 

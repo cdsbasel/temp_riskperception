@@ -568,9 +568,6 @@ new_df$ICC_results_1[!is.na(new_df$correlation_results_1)] <- NA
 # replace
 new_df$ICC_results_1[216] <- 0.42
 
-# replace
-new_df$correlation_results_1[216] <- 0.87
-
 
 #Clean up the column ICC_results_1 and column ICC_results_1.1
 new_df$ICC_results_1.1[17] <- "0.82"
@@ -583,6 +580,7 @@ new_df$ICC_results_1 <- gsub("[^-0-9.,]+", "", new_df$ICC_results_1)
 
 
 #Clean up the column correlation_results_1 and column correaltion_results_1.1-1.8
+new_df$correlation_results_1[216] <- 0.87
 new_df$correlation_results_1[179] <- "0.51"
 new_df$correlation_results_1.1[179] <- "0.58"
 new_df$correlation_results_1[43] <- "0.49"
@@ -654,34 +652,35 @@ new_df$correlation_results_1.8[83] <- "0.54"
 new_df$correlation_results_1[215] <- "-0.3784"
 new_df$correlation_results_1[161] <- "-0.19"
 
-df_edit$correlation_results_1[207] <- "0.52"
-df_edit$correlation_results_1.1[207] <- "0.57"
-df_edit$correlation_results_1.2[207] <- "0.54"
-df_edit$correlation_results_1.3[207] <- "0.26"
-df_edit$correlation_results_1.4[207] <- "0.61"
-df_edit$correlation_results_1.5[207] <- "0.68"
+new_df$correlation_results_1[207] <- "0.52"
+new_df$correlation_results_1.1[207] <- "0.57"
+new_df$correlation_results_1.2[207] <- "0.54"
+new_df$correlation_results_1.3[207] <- "0.26"
+new_df$correlation_results_1.4[207] <- "0.61"
+new_df$correlation_results_1.5[207] <- "0.68"
 
-df_edit$correlation_results_1[77] <- "0.295"
-df_edit$correlation_results_1.1[77] <- "0.224"
+new_df$correlation_results_1[77] <- "0.295"
+new_df$correlation_results_1.1[77] <- "0.224"
 
-df_edit$correlation_results_1[42] <- "0.55"
-df_edit$correlation_results_1[203] <- "0.815"
-df_edit$correlation_results_1[70] <- "0.74"
-df_edit$correlation_results_1[74] <- "0.71"
-df_edit$correlation_results_1[102] <- "0.68"
-df_edit$correlation_results_1[75] <- "0.58"
-df_edit$correlation_results_1[122] <- "0.42"
-df_edit$correlation_results_1[76] <- "0.97"
-df_edit$correlation_results_1[132] <- "0.88"
-df_edit$correlation_results_1[13] <- "0.87"
-df_edit$correlation_results_1[218] <- "0.86"
-df_edit$correlation_results_1[221] <- "0.71"
-df_edit$correlation_results_1[201] <- "0.68"
-df_edit$correlation_results_1[205] <- "0.63"
-df_edit$correlation_results_1[237] <- "0.97"
-df_edit$correlation_results_1[186] <- "0.83"
-df_edit$correlation_results_1[238] <- "0.91"
-
+new_df$correlation_results_1[42] <- "0.55"
+new_df$correlation_results_1[203] <- "0.815"
+new_df$correlation_results_1[70] <- "0.74"
+new_df$correlation_results_1[74] <- "0.71"
+new_df$correlation_results_1[102] <- "0.68"
+new_df$correlation_results_1[75] <- "0.58"
+new_df$correlation_results_1[122] <- "0.42"
+new_df$correlation_results_1[76] <- "0.97"
+new_df$correlation_results_1[132] <- "0.88"
+new_df$correlation_results_1[13] <- "0.87"
+new_df$correlation_results_1[218] <- "0.86"
+new_df$correlation_results_1[221] <- "0.71"
+new_df$correlation_results_1[201] <- "0.68"
+new_df$correlation_results_1[205] <- "0.63"
+new_df$correlation_results_1[237] <- "0.97"
+new_df$correlation_results_1[186] <- "0.83"
+new_df$correlation_results_1[238] <- "0.91"
+new_df$correlation_results_1[27] <- "-0.6188"
+new_df$correlation_results_1[39] <- "0.815"
 
 
 
@@ -938,13 +937,18 @@ write.csv(df_final, file = "data/final.csv")
 
 ##merge created files with unique id codes (abstract df and final df)--------------
 
-df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
+#df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
 
-df_final_codes <- read_csv("data/df_final_codes.csv")
 
-merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
 
-final <- merged_df %>%
+
+######Dieser Code ist falsch
+#df_final_codes <- read_csv("data/df_final_codes.csv")
+
+#merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
+
+#final <- merged_df %>%
   select(-codes, -Title, -Authors, -`Published Year`)
 
-write.csv(final, file = "data/final.csv")
+#write.csv(final, file = "data/final.csv")
+
