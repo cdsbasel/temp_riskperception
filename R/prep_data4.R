@@ -932,20 +932,191 @@ df_final[columns_to_check] <- lapply(df_final[columns_to_check], as.numeric)
 rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), ]
 
 ##it worked, every row has at least one domain
+library(openxlsx)
+#install.packages("openxlsx")
 
 write.csv(df_final, file = "data/final.csv")
+write.xlsx(df_final, file = "data/final.xlsx")
 
 ##merge created files with unique id codes (abstract df and final df)--------------
 
-#df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
-
-
-
+# df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
+# 
+# df_abstract <- data.frame(Title1 = df_abstracts_codes$Title, Title2 = df_final$paper_title)
+# df_abstract$Title2 <- rev(df_abstract$Title2)
+# 
+# df_abstract$Title1_lower <- tolower(df_abstract$Title1)
+# df_abstract$Title2_lower <- tolower(df_abstract$Title2)
+# 
+# df_abstract$Match <- ifelse(df_abstract$Title1_lower == df_abstract$Title2_lower, "True", "False")
+# 
+# false_rows <- df_abstract[df_abstract$Match == "False", ]
+# print(false_rows)
+# 
+# #trying to match Title1_lower with Title2_lower
+# df_abstract$Title1_lower[10] <- "serial cross-sectional data on the public's perception on the coronavirus during the first months of the pandemic in germany"
+# df_abstract$Title2_lower[10] <- "serial cross-sectional data on the public's perception on the coronavirus during the first months of the pandemic in germany"
+# 
+# df_abstract$Title2_lower[11] <- "the four weeks before lockdown during the covid-19 pandemic in germany: a weekly serial cross-sectional survey on risk perceptions, knowledge, public trust and behaviour, 3 to 25 march 2020"
+# 
+# df_abstract$Title2_lower[13]<- "age differences in covid-19 preventive behavior a psychological perspective"
+# 
+# df_abstract$Title2_lower[15]<- "the relationship between adolescent risk perception and emotions during the covid-19: a short-term longitudinal study"
+# 
+# df_abstract$Title2_lower[19]<- "social distancing and transmission-reducing practices during the 2019 coronavirus disease and 2015 middle east respiratory syndrome coronavirus outbreaks in korea"
+# 
+# df_abstract$Title2_lower[21]<- "human values and beliefs and concern about climate change: a bayesian longitudinal analysis"
+# 
+# df_abstract$Title2_lower[23]<-"risk taking propensity in pregnancy - longitudinal study"
+# 
+# df_abstract$Title2_lower[28]<- "changes in risk perception of the health effects of radiation and mental health status: the fukushima health management survey"
+# 
+# df_abstract$Title2_lower[32]<- "eating in moderation and the essential role of awareness. a dutch longitudinal study identifying psychosocial predictors"
+# 
+# df_abstract$Title2_lower[36]<- "risk perceptions and covid-19 protective behaviors: a two-wave longitudinal study of epidemic and post-epidemic periods"
+# 
+# df_abstract$Title2_lower[39]<- "development and psychometric testing of a questionnaire to assess nurse's perception of risks during enteral nutrition"
+# 
+# #reorder so its matching
+# 
+# df_abstract$Title1_lower[41] <- df_abstract$Title1_lower[42]
+# df_abstract$Title1[41] <- df_abstract$Title1[42]
+# df_abstract$Title1_lower[42] <- df_abstract$Title1_lower[43]
+# df_abstract$Title1[42] <- df_abstract$Title1[43]
+# df_abstract$Title1_lower[43] <- df_abstract$Title1_lower[44]
+# df_abstract$Title1[43] <- df_abstract$Title1[44]
+# df_abstract$Title1_lower[44] <- df_abstract$Title1_lower[45]
+# df_abstract$Title1[44] <- df_abstract$Title1[45]
+# df_abstract$Title1_lower[45] <- df_abstract$Title1_lower[46]
+# df_abstract$Title1[45] <- df_abstract$Title1[46]
+# df_abstract$Title1_lower[46] <- df_abstract$Title1_lower[47]
+# df_abstract$Title1[46] <- df_abstract$Title1[47]
+# df_abstract$Title1_lower[47] <- df_abstract$Title1_lower[48]
+# df_abstract$Title1[47] <- df_abstract$Title1[48]
+# df_abstract$Title1_lower[48] <- df_abstract$Title1_lower[49]
+# df_abstract$Title1[48] <- df_abstract$Title1[49]
+# df_abstract$Title1_lower[49] <- df_abstract$Title1_lower[50]
+# df_abstract$Title1[49] <- df_abstract$Title1[50]
+# df_abstract$Title1_lower[50] <- df_abstract$Title1_lower[51]
+# df_abstract$Title1[50] <- df_abstract$Title1[51]
+# df_abstract$Title1_lower[51] <- df_abstract$Title1_lower[52]
+# df_abstract$Title1[51] <- df_abstract$Title1[52]
+# df_abstract$Title1_lower[52] <- df_abstract$Title1_lower[53]
+# df_abstract$Title1[52] <- df_abstract$Title1[53]
+# df_abstract$Title1_lower[53] <- df_abstract$Title1_lower[54]
+# df_abstract$Title1[53] <- df_abstract$Title1[54]
+# df_abstract$Title1_lower[54] <- df_abstract$Title1_lower[55]
+# df_abstract$Title1[54] <- df_abstract$Title1[55]
+# df_abstract$Title1_lower[55] <- df_abstract$Title1_lower[56]
+# df_abstract$Title1[55] <- df_abstract$Title1[56]
+# df_abstract$Title1_lower[56] <- df_abstract$Title1_lower[57]
+# df_abstract$Title1[56] <- df_abstract$Title1[57]
+# 
+# df_abstract$Title1_lower[57] <- "human papillomavirus vaccine-related risk perceptions do not predict sexual initiation among young women over 30 months following vaccination"
+# df_abstract$Title1[57] <- "Human Papillomavirus Vaccine-Related Risk Perceptions Do Not Predict Sexual Initiation Among Young Women Over 30 Months Following Vaccination"
+# 
+# #check if it worked
+# df_abstract$Match <- ifelse(df_abstract$Title1_lower == df_abstract$Title2_lower, "True", "False")
+# 
+# false_rows <- df_abstract[df_abstract$Match == "False", ]
+# print(false_rows)
+# 
+# #continue to match Title1_lower with Title2_lower
+# df_abstract$Title2_lower[43] <- "changes of public risk perception in china: 2008-2018"
+# df_abstract$Title2_lower[45] <- "comparison of different risk perception measures in predicting seasonal influenza vaccination among healthy chinese adults in hong kong: a prospective longitudinal study"
+# df_abstract$Title1_lower[48] <- "mass media, information and demand for environmental quality: evidence from the under the dome"
+# df_abstract$Title2_lower[48] <- "mass media, information and demand for environmental quality: evidence from the under the dome"
+# df_abstract$Title2_lower[49] <- "revisiting the effects of societal threat perceptions on conflict-related positions: a three-wave study"
+# df_abstract$Title1_lower[57] <- "human papillomavirus vaccine-related risk perceptions and  subsequent sexual behaviors and sexually transmitted infections among vaccinated adolescent women"
+# df_abstract$Title2_lower[59] <- "evaluating the effects of news-following, volume and content of news coverage on americans' risk perceptions during the 2014-2016 ebola outbreak"
+# df_abstract$Title2_lower[61] <- "seeing is believing: examining self-efficacy and trait hope as moderators of youths' positive risk-taking intention"
+# df_abstract$Title2_lower[66] <- "adaptation, translation and reliability of the australian 'juniors enjoying cricket safely' injury risk perception questionnaire for sri lanka"
+# df_abstract$Title2_lower[68] <- "covid-19 and vaccine hesitancy: a longitudinal study"
+# df_abstract$Title2_lower[76] <-"a reciprocal effects analysis of cannabis use and perceptions of risk"
+# df_abstract$Title2_lower[80] <-"long-term risk perceptions of women with ductal carcinoma in situ"
+# df_abstract$Title2_lower[82] <-"relationships between changes in hiv risk perception and condom use in east zimbabwe 2003-2013: population-based longitudinal analyses"
+# df_abstract$Title2_lower[84] <-"the relationship between meaning in life and health behaviors in adults aged 55 years and over during the covid-19 pandemic: the mediating role of risk perception and the moderating role of powerful others health locus of control"
+# df_abstract$Title2_lower[86] <-"older marijuana users' marijuana risk perceptions: associations with marijuana use patterns and marijuana and other substance use disorders"
+# df_abstract$Title2_lower[88] <-"evaluation of food safety curriculum effectiveness: a longitudinal study of high-school-aged youths' knowledge retention, risk-perception, and perceived behavioral control"
+# df_abstract$Title2_lower[90] <-"risk perception and smoking behavior in medically ill smokers: a prospective study"
+# df_abstract$Title2_lower[91] <-"trends in risk perceptions and vaccination intentions: a longitudinal study of the first year of the h1n1 pandemic"
+# df_abstract$Title2_lower[92] <-"longitudinal patterns of food procurement over the course of the covid-19 pandemic: findings from a canadian online household survey"
+# df_abstract$Title2_lower[96] <-"impact of a school-based peer sexual health intervention on normative beliefs, risk perceptions, and sexual behavior of zambian adolescents"
+# df_abstract$Title2_lower[98] <-"mailed intervention to promote sun protection of children a randomized controlled trial"
+# df_abstract$Title2_lower[104] <-"on the influence of risk perception on mental health: living near an incinerator"
+# df_abstract$Title2_lower[108] <-"changes in risk perception and self-reported protective behaviour during the first week of the covid-19 pandemic in the united states"
+# df_abstract$Title2_lower[110] <-"psychometric characteristics of the penn state worry questionnaire and metacognitions questionnaire-30 and metacognitive predictors of worry and obsessive-compulsive symptoms in a turkish sample"
+# df_abstract$Title2_lower[113] <-"worldviews, trust, and risk perceptions shape public acceptance of covid-19 public health measures"
+# df_abstract$Title2_lower[118] <-"longitudinal effects of cigarette pictorial warning labels among young adults"
+# df_abstract$Title2_lower[119] <-"threatened or threatening? how ideology shapes asylum seekers' immigration policy attitudes in israel and australia"
+# df_abstract$Title2_lower[122] <-"predictors of stage transitions in the precaution adoption process model"
+# df_abstract$Title2_lower[123] <-"(almost) all quiet over one and a half years: a longitudinal study on causality between key determinants of private flood mitigation"
+# df_abstract$Title2_lower[124] <-"us adult smokers' perceived relative risk on ends and its effects on their transitions between cigarettes and ends"
+# df_abstract$Title2_lower[129] <-"information about first-trimester screening and self-reported distress among pregnant women and partners - comparing two methods of information giving in sweden"
+# df_abstract$Title2_lower[133] <-"exploratory factor-analysis of adolescent attitudes toward alcohol and risk"
+# df_abstract$Title2_lower[140] <-"self-efficacy in sleep apnea: instrument development and patient perceptions of obstructive sleep apnea risk, treatment benefit, and volition to use continuous positive airway pressure"
+# df_abstract$Title2_lower[153] <-"development of work stress scale for correctional officers"
+# df_abstract$Title2_lower[154] <-"predictors of adherence to public health behaviors for fighting covid-19 derived from longitudinal data"
+# df_abstract$Title2_lower[155] <-"sleep and mood disturbances during the covid-19 outbreak in an urban chinese population in hong kong: a longitudinal study of the second and third waves of the outbreak"
+# df_abstract$Title2_lower[156] <-"perceived risk and self-efficacy as motivators: understanding individuals' long-term use of health information"
+# df_abstract$Title2_lower[157] <-"prevalence and occupational predictors of psychological distress in the offshore petroleum industry: a prospective study"
+# df_abstract$Title2_lower[158] <-"perceived threat of covid-19, attitudes towards vaccination, and vaccine hesitancy: a prospective longitudinal study in the uk"
+# df_abstract$Title2_lower[161] <-"changing emotions in the covid-19 pandemic: a four-wave longitudinal study in the united states and china*"
+# df_abstract$Title1_lower[165] <-"examining untact tourism behaviour in south korea during the covid-19 pandemic: a two-wave longitudinal study (march and september 2020)"
+# df_abstract$Title2_lower[165] <-"examining untact tourism behaviour in south korea during the covid-19 pandemic: a two-wave longitudinal study (march and september 2020)"
+# df_abstract$Title2_lower[166] <-"adaptation and validation of the turkish version of the vaccine hesitancy 5 point likert scale"
+# df_abstract$Title2_lower[171] <-"reactions of older swiss adults to the covid-19 pandemic: a longitudinal survey on the acceptance of and adherence to public health measures"
+# df_abstract$Title2_lower[173] <-"how baby's first shot determines the development of maternal attitudes towards vaccination"
+# df_abstract$Title2_lower[178] <-"concern and risk perception for osteoporosis and fractures amongst post-menopausal australian women: results from the global longitudinal study of osteoporosis in women (glow) cohort"
+# df_abstract$Title2_lower[185] <-"a longitudinal analysis of americans' media sources, risk perceptions, and judged need for action during the zika outbreak"
+# df_abstract$Title2_lower[186] <-"taking care of each other: how can we increase compliance with personal protective measures during the covid-19 pandemic in chile?"
+# df_abstract$Title2_lower[189] <-"assessing causality in the relationship between adolescents' risky sexual online behavior and their perceptions of this behavior"
+# df_abstract$Title2_lower[190] <-"risk as feelings or risk and feelings? a crosslagged panel analysis"
+# df_abstract$Title2_lower[191] <-"the influence of risk perceptions on close contact frequency during the sars-cov-2 pandemic"
+# df_abstract$Title2_lower[192] <-"changes in consumers' food purchase and transport behaviors over a decade (2010 to 2019) following health and convenience food trends"
+# df_abstract$Title2_lower[194] <-"cohort profile: the uk covid-19 public experiences (cope) prospective longitudinal mixed-methods study of health and well-being during the sarscov2 coronavirus pandemic"
+# df_abstract$Title2_lower[195] <-"influence of educational actions on transitioning of food safety culture in a food service context: part 2-effectiveness of educational actions in a longitudinal study"
+# df_abstract$Title2_lower[203] <-"trouble on my mind: the effect of catastrophic events on people's worries"
+# df_abstract$Title2_lower[206] <-"restaurant diners' self-protective behavior in response to an epidemic crisis"
+# df_abstract$Title2_lower[213] <-"the longitudinal effects of stress and fear on psychiatric symptoms in mothers during the covid-19 pandemic"
+# df_abstract$Title2_lower[218] <-"hospital-based healthcare worker perceptions of personal risk related to covid-19: one year follow-up"
+# df_abstract$Title2_lower[221] <-"using ecological momentary assessment to study the development of covid-19 worries in sweden: longitudinal study"
+# df_abstract$Title2_lower[223] <-"modeling affective and cognitive responses to soft-target terrorism over time"
+# df_abstract$Title2_lower[229] <-"young children have social worries too: validation of a brief parent report measure of social worries in children aged 4–8 years"
+# df_abstract$Title2_lower[231] <-"predictors of low diabetes risk perception in a multi-ethnic cohort of women with gestational diabetes mellitus"
+# df_abstract$Title2_lower[236] <-"the role of feelings of intimacy on perceptions of risk for a sexually transmitted disease and condom use in the sexual relationships of adolescent african-american females"
+# 
+# #check if it worked:
+# df_abstract$Match <- ifelse(df_abstract$Title1_lower == df_abstract$Title2_lower, "True", "False")
+# 
+# false_rows <- df_abstract[df_abstract$Match == "False", ]
+# print(false_rows)
+# #yes it worked, now they're matching
+# 
+# #try to merge them 
+# #Title1 and Title1_lower to df_abstracts_codes
+# df_abstracts_codes <- cbind(df_abstracts_codes, df_abstract$Title1, df_abstract$Title1_lower)
+# colnames(df_abstracts_codes)[which(colnames(df_abstracts_codes) == "df_abstract$Title1_lower")] <- "merge"
+# 
+# 
+# #Title2 and Title2_lower to df_final
+# df_final <- cbind(df_final, df_abstract$Title2, df_abstract$Title2_lower)
+# colnames(df_final)[which(colnames(df_final) == "df_abstract$Title2_lower")] <- "merge"
+# 
+# final <- merge(df_abstracts_codes, df_final, by = "merge")
+# 
+# final <- select(final, -merge, -codes, -Title, -df_abstract$Title1)
+# 
+# 
+# length(unique(df_abstracts_codes$codes)) == length(unique(df_final_codes$codes))
+# intersect(unique(df_abstracts_codes$codes) == unique(df_final_codes$codes))
 
 ######Dieser Code ist falsch
-#df_final_codes <- read_csv("data/df_final_codes.csv")
+df_final_codes <- read.xlsx("data/df_final_codes.xlsx")
+df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
 
-#merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
+merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
+#@Amanda: kannst du bitte nochmals überprüfen ob es stimmt? wenn ja, eif den Müll oben mit den Titles löschen Zeile 943 und das letzte unten nochmal laufen lassen damit es die anderen Columns die es nicht braucht, löscht 
 
 #final <- merged_df %>%
   select(-codes, -Title, -Authors, -`Published Year`)
