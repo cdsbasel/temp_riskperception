@@ -1,5 +1,5 @@
 ###last author: Arzie 
-### last date: 11.12.23
+### last date: 18.02.24
 
 #####Prep ------------------
 #load packages 
@@ -441,9 +441,9 @@ for (column in age_category_columns) {
 # Replace specific values in age_category_1 to age_category_5
 df_edit <- df_edit %>%
   mutate_at(vars(all_of(age_category_columns)), 
-  ~ ifelse(. %in% c("adult", "adults\n\n", "laypeople", "older adults and younger adults"), "adults",
+            ~ ifelse(. %in% c("adult", "adults\n\n", "laypeople", "older adults and younger adults"), "adults",
                      ifelse(. %in% c("adolescent", "adolescents"), "adolescents",
-                     ifelse(. == "adolescents and young adults", "young adults", .))))
+                            ifelse(. == "adolescents and young adults", "young adults", .))))
 
 
 ####change interval columns--------------------
@@ -568,9 +568,6 @@ new_df$ICC_results_1[!is.na(new_df$correlation_results_1)] <- NA
 # replace
 new_df$ICC_results_1[216] <- 0.42
 
-# replace
-new_df$correlation_results_1[216] <- 0.87
-
 
 #Clean up the column ICC_results_1 and column ICC_results_1.1
 new_df$ICC_results_1.1[17] <- "0.82"
@@ -583,6 +580,7 @@ new_df$ICC_results_1 <- gsub("[^-0-9.,]+", "", new_df$ICC_results_1)
 
 
 #Clean up the column correlation_results_1 and column correaltion_results_1.1-1.8
+new_df$correlation_results_1[216] <- 0.87
 new_df$correlation_results_1[179] <- "0.51"
 new_df$correlation_results_1.1[179] <- "0.58"
 new_df$correlation_results_1[43] <- "0.49"
@@ -654,24 +652,35 @@ new_df$correlation_results_1.8[83] <- "0.54"
 new_df$correlation_results_1[215] <- "-0.3784"
 new_df$correlation_results_1[161] <- "-0.19"
 
-df_edit$correlation_results_1[42] <- "0.55"
-df_edit$correlation_results_1[203] <- "0.815"
-df_edit$correlation_results_1[70] <- "0.74"
-df_edit$correlation_results_1[74] <- "0.71"
-df_edit$correlation_results_1[102] <- "0.68"
-df_edit$correlation_results_1[75] <- "0.58"
-df_edit$correlation_results_1[122] <- "0.42"
-df_edit$correlation_results_1[76] <- "0.97"
-df_edit$correlation_results_1[132] <- "0.88"
-df_edit$correlation_results_1[13] <- "0.87"
-df_edit$correlation_results_1[218] <- "0.86"
-df_edit$correlation_results_1[221] <- "0.71"
-df_edit$correlation_results_1[201] <- "0.68"
-df_edit$correlation_results_1[205] <- " 0.63"
-df_edit$correlation_results_1[237] <- "0.97"
-df_edit$correlation_results_1[186] <- "0.83"
-df_edit$correlation_results_1[238] <- "0.91"
+new_df$correlation_results_1[207] <- "0.52"
+new_df$correlation_results_1.1[207] <- "0.57"
+new_df$correlation_results_1.2[207] <- "0.54"
+new_df$correlation_results_1.3[207] <- "0.26"
+new_df$correlation_results_1.4[207] <- "0.61"
+new_df$correlation_results_1.5[207] <- "0.68"
 
+new_df$correlation_results_1[77] <- "0.295"
+new_df$correlation_results_1.1[77] <- "0.224"
+
+new_df$correlation_results_1[42] <- "0.55"
+new_df$correlation_results_1[203] <- "0.815"
+new_df$correlation_results_1[70] <- "0.74"
+new_df$correlation_results_1[74] <- "0.71"
+new_df$correlation_results_1[102] <- "0.68"
+new_df$correlation_results_1[75] <- "0.58"
+new_df$correlation_results_1[122] <- "0.42"
+new_df$correlation_results_1[76] <- "0.97"
+new_df$correlation_results_1[132] <- "0.88"
+new_df$correlation_results_1[13] <- "0.87"
+new_df$correlation_results_1[218] <- "0.86"
+new_df$correlation_results_1[221] <- "0.71"
+new_df$correlation_results_1[201] <- "0.68"
+new_df$correlation_results_1[205] <- "0.63"
+new_df$correlation_results_1[237] <- "0.97"
+new_df$correlation_results_1[186] <- "0.83"
+new_df$correlation_results_1[238] <- "0.91"
+new_df$correlation_results_1[27] <- "-0.6188"
+new_df$correlation_results_1[39] <- "0.815"
 
 
 
@@ -689,7 +698,7 @@ new_dataframe <- data.frame(
   test_retest_results_1 = df_edit$`test-retest_result_5`
 )
 
-#rename the collums to correlation_results_2-5
+#rename the columns to correlation_results_2-5
 names(new_dataframe) <- c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")
 
 new_dataframe$correlation_results_2[215] <- "-0.2666"
@@ -703,6 +712,8 @@ new_dataframe[] <- lapply(new_dataframe, function(x) gsub("[^0-9.,-]+", "", x))
 # Add the relevant columns from 'new_dataframe' back to 'df_edit'
 df_edit <- cbind(df_edit, new_dataframe[, c("correlation_results_2", "correlation_results_3", "correlation_results_4", "correlation_results_5")])
 
+df_edit$correlation_results_1[89] <- "0.78"
+df_edit$ICC_results_1[89] <- "0.83"
 
 #add all the missing sample sizes. 
 df_edit$sample_size_1[24] <- 359
@@ -783,13 +794,6 @@ df_edit$political <- as.integer(grepl("trust in politics|political", df_edit$dom
 
 
 
-
-
-
-
-
-
-
 ####characteristics_sample:
 columns_to_check <- c("characteristics_sample_1", "characteristics_sample_2", "characteristics_sample_3", "characteristics_sample_4", "characteristics_sample_5")
 
@@ -800,65 +804,33 @@ unique_values_list <- lapply(df_edit[, columns_to_check], unique)
 for (i in seq_along(columns_to_check)) {
   column_name <- columns_to_check[i]
   unique_values <- unique_values_list[[i]]
-  
   cat("Unique values in", column_name, ":", toString(unique_values), "\n")
 }
 
 
-df_edit <- df_edit %>%
-  mutate(
-    sample_category_1 = case_when(
-      grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample_1, ignore.case = TRUE) ~ "Workers",
-      grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample_1, ignore.case = TRUE) ~ "Students",
-      grepl("female students|women|only female", characteristics_sample_1, ignore.case = TRUE) ~ "Only Female",
-      grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample_1, ignore.case = TRUE) ~ "Pregnant Women",
-      grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample_1, ignore.case = TRUE) ~ "Clinical/Patients",
-      grepl("smokers|current or former smokers|former smokers", characteristics_sample_1, ignore.case = TRUE) ~ "Smokers",
-      grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample_1, ignore.case = TRUE) ~ "Multiple Samples",
-      TRUE ~ as.character(characteristics_sample_1)),
-    sample_category_2 = case_when(
-      grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample_2, ignore.case = TRUE) ~ "Workers",
-      grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample_2, ignore.case = TRUE) ~ "Students",
-      grepl("female students|women|only female", characteristics_sample_2, ignore.case = TRUE) ~ "Only Female",
-      grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample_2, ignore.case = TRUE) ~ "Pregnant Women",
-      grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample_2, ignore.case = TRUE) ~ "Clinical/Patients",
-      grepl("smokers|current or former smokers|former smokers", characteristics_sample_2, ignore.case = TRUE) ~ "Smokers",
-      grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample_2, ignore.case = TRUE) ~ "Multiple Samples",
-      TRUE ~ as.character(characteristics_sample_2)),
-    sample_category_3 = case_when(
-      grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample_3, ignore.case = TRUE) ~ "Workers",
-      grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample_3, ignore.case = TRUE) ~ "Students",
-      grepl("female students|women|only female", characteristics_sample_3, ignore.case = TRUE) ~ "Only Female",
-      grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample_3, ignore.case = TRUE) ~ "Pregnant Women",
-      grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample_3, ignore.case = TRUE) ~ "Clinical/Patients",
-      grepl("smokers|current or former smokers|former smokers", characteristics_sample_3, ignore.case = TRUE) ~ "Smokers",
-      grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample_3, ignore.case = TRUE) ~ "Multiple Samples",
-      TRUE ~ as.character(characteristics_sample_3)),
-    sample_category_4 = case_when(
-      grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample_4, ignore.case = TRUE) ~ "Workers",
-      grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample_4, ignore.case = TRUE) ~ "Students",
-      grepl("female students|women|only female", characteristics_sample_4, ignore.case = TRUE) ~ "Only Female",
-      grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample_4, ignore.case = TRUE) ~ "Pregnant Women",
-      grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample_4, ignore.case = TRUE) ~ "Clinical/Patients",
-      grepl("smokers|current or former smokers|former smokers", characteristics_sample_4, ignore.case = TRUE) ~ "Smokers",
-      grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample_4, ignore.case = TRUE) ~ "Multiple Samples",
-      TRUE ~ as.character(characteristics_sample_4)),
-    sample_category_5 = case_when(
-      grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample_5, ignore.case = TRUE) ~ "Workers",
-      grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample_5, ignore.case = TRUE) ~ "Students",
-      grepl("female students|women|only female", characteristics_sample_5, ignore.case = TRUE) ~ "Only Female",
-      grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample_5, ignore.case = TRUE) ~ "Pregnant Women",
-      grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample_5, ignore.case = TRUE) ~ "Clinical/Patients",
-      grepl("smokers|current or former smokers|former smokers", characteristics_sample_5, ignore.case = TRUE) ~ "Smokers",
-      grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample_5, ignore.case = TRUE) ~ "Multiple Samples",
-      TRUE ~ as.character(characteristics_sample_5)))
+categorize_samples <- function(characteristics_sample) {
+  case_when(
+    grepl("cancer counselee|healthcare workers|food handlers and managers|military sailors|offshore workers|correctional officers|doctors|nurses and other medical professionals|nurses|construction workers|counselees|breast cancer genetic counselee", characteristics_sample, ignore.case = TRUE) ~ "Workers",
+    grepl("students|undergraduates|high school students|female cancer survivors|rheumatoid arthritis outpatients", characteristics_sample, ignore.case = TRUE) ~ "Students",
+    grepl("female students|women|only female", characteristics_sample, ignore.case = TRUE) ~ "Only Female",
+    grepl("pregnant women|pregnant|pregnant women and their male partners", characteristics_sample, ignore.case = TRUE) ~ "Pregnant Women",
+    grepl("people with history of breast cancer|individuals with a family history of pancreatic cancer or brca2 mutation carriers|clinical sample|older adults with the 2 diabetes mellitus|adult women with primary diagnosis of stage 0-iiia bbc|no previous cancer diagnoses|received bc surgery and in a committed relationship|patients|cardiac patients|older adults with gad|women with ductal carcinoma in situ|patients with psoriasis|breast cancer patients", characteristics_sample, ignore.case = TRUE) ~ "Clinical/Patients",
+    grepl("smokers|current or former smokers|former smokers", characteristics_sample, ignore.case = TRUE) ~ "Smokers",
+    grepl("several data sets|study 2007|study 2018|panel data|participants and data from a panel study|sample consisted of two case studies|one from previous study and one freshly recruited|two samples used|50 general population|25 patients", characteristics_sample, ignore.case = TRUE) ~ "Multiple Samples",
+    TRUE ~ as.character(characteristics_sample)
+  )
+}
+
+df_edit[paste0("sample_category_", 1:5)] <- lapply(1:5, function(i) {
+  categorize_samples(df_edit[[paste0("characteristics_sample_", i)]])
+})
+
 
 #lower case letters for the new columns 
 df_edit <- df_edit %>%
   mutate_at(
     vars(sample_category_1:sample_category_5),
     funs(tolower(.)))
-
 
 ##UNITS ASSESSED
 columns_to_check <- c("units_assessed_1", "units_assessed_2", "units_assessed_3", "units_assessed_4", "units_assessed_5")
@@ -915,7 +887,7 @@ df_edit$units_assessed_1[35] <- "likert scale"
 df_edit$units_assessed_1[132] <- "likert scale"
 df_edit$units_assessed_1[113] <- "likert scale"
 
-#make one finale dataset for the analysis 
+#make one final dataset for the analysis 
 df_final <- df_edit[c(
   "author", "paper_title", "publication_year", "data_availability",
   "study_design", "risk_1", "risk_2", "risk_3", "risk_4", "risk_5",
@@ -960,6 +932,21 @@ df_final[columns_to_check] <- lapply(df_final[columns_to_check], as.numeric)
 rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), ]
 
 ##it worked, every row has at least one domain
+library(openxlsx)
+#install.packages("openxlsx")
 
 write.csv(df_final, file = "data/final.csv")
+write.xlsx(df_final, file = "data/final.xlsx")
+
+
+##merge abstract file with final df
+df_final_codes <- read.xlsx("data/df_final_codes.xlsx")
+df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
+
+merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
+
+#final <- merged_df %>%
+  select(-codes, -Title, -Authors, -`Published Year`)
+
+#write.csv(final, file = "data/final.csv")
 
