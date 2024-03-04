@@ -872,6 +872,7 @@ df_edit$units_assessed_1[142] <- "range"
 df_edit$units_assessed_1[29] <- "range"
 df_edit$units_assessed_1[144] <- "range"
 df_edit$units_assessed_1[15] <- "likert scale"
+df_edit$units_assessed_1[107] <- "range"
 
 
 #correct and add the item numbers
@@ -945,8 +946,8 @@ df_abstracts_codes <- read_csv("data/df_abstracts_codes.csv")
 
 merged_df <- inner_join(df_abstracts_codes, df_final_codes, by = "codes")
 
-#final <- merged_df %>%
+final <- merged_df %>%
   select(-codes, -Title, -Authors, -`Published Year`)
 
-#write.csv(final, file = "data/final.csv")
+write.csv(final, file = "data/final.csv")
 
