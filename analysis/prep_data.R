@@ -26,7 +26,7 @@ df <- read_csv("data/raw.csv")
 names(df)
 
 #create name list with the old and new names
-name_file <- read_csv("R/variable_name_list.csv")
+name_file <- read_csv("analysis/variable_name_list.csv")
 
 #create column new/old names list
 numbers = 1:15
