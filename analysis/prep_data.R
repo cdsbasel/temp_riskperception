@@ -1,5 +1,9 @@
-###last author: Arzie 
-### last date: 18.02.24
+# Description -------------------------------------------------------------
+
+# In this script we preprocess the extracted data.
+
+# Author(s): Amanda Holzer(1), Arzie Bajrami(1), Rui Mata(1)
+# (1)Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
 
 #####Prep ------------------
 #load packages 
