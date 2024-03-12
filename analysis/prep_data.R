@@ -9,10 +9,10 @@
 #load packages 
 #install.packages("dplyr")
 #install.packages("here")
+#install.packages("tidyverse")
 library(dplyr)
 library(here)
 library(readr)
-#install.packages("tidyverse")
 library(tidyverse)
 
 
@@ -614,7 +614,7 @@ new_df$correlation_results_1[66] <- "0.49"
 new_df$correlation_results_1.1[66] <- "0.31"
 
 new_df$correlation_results_1[241] <- "0.68"
-new_df$correlation_results_1.1[241] <- "0.09"
+new_df$correlation_results_1.1[241] <- "0.90"
 
 new_df$correlation_results_1[127] <- NA
 new_df$correlation_results_1[230] <- NA

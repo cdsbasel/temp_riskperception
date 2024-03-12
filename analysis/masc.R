@@ -7,22 +7,22 @@
 # (1)Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
 
 # PACKAGES ---------------------------------------------------------------
+#install.packages("brms")
+#install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+#install.packages("loo")
+#install.packages("bayesplot")
+#install.packages("tidybayes")
+#install.packages("posterior")
+#install.packages("janitor")
 
 library(tidyverse)
-#install.packages("brms")
 library(brms)
-#install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 library(cmdstanr)
-#install.packages("loo")
 library(loo)
-#install.packages("bayesplot")
 library(bayesplot)
-#install.packages("tidybayes")
 library(tidybayes)
-#install.packages("posterior")
 library(posterior)
 library(here)
-#install.packages("janitor")
 library(janitor)
 
 color_scheme_set("teal")
@@ -63,16 +63,14 @@ df_pivoted <- selected_columns %>%
                values_to = "val")
 
 # Filter out rows with NA values in the val column
-df_filtered <- df_pivoted %>%
+df_filtered<- df_pivoted %>%
   filter(!is.na(val))
 
 # Separate only the rows with "correlation_results" prefix in the var column
-df_filtered_separated <- df_filtered %>%
+df_filtered_separated <- df_pivoted %>%
   filter(str_detect(var, "correlation_results")) %>%
   separate(var, into = c("correlation_name", "correlation_value"), sep = ":")
 
-# Print the first few rows of the separated dataframe to check the result
-head(df_filtered_separated)
 
 df_filtered <- df_pivoted %>%
   filter(!is.na(val))
@@ -83,12 +81,6 @@ df_cor_results <- df_filtered %>%
   filter(str_detect(var, "correlation_results")) %>%
   separate(var, into = c("cor_name"), sep = ":")%>%
   rename(cor_val = val)
-
-df_risk <- df_filtered %>%
-  filter(str_detect(var, "risk")) %>%
-  separate(var, into = c("risk_name"), sep = ":") %>%
-  rename(risk_val = val)%>%
-  select(-author, -paper_title, -study_design)
 
 df_interval <- df_filtered %>%
   filter(str_detect(var, "test_retest_interval")) %>%
@@ -109,11 +101,8 @@ df_study <- df_filtered %>%
   select(-author, -paper_title)
 
 
-merged_df <- left_join(df_cor_results, df_risk, by = "x1")
+merged_df <- left_join(df_cor_results, df_interval, by = "x1")
 
-merged_df <- left_join(merged_df, df_interval, by = "x1")
-
-merged_df <- left_join(merged_df, df_size, by = "x1")
 
 #this looks weird-----------------
 
