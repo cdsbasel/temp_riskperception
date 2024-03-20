@@ -24,6 +24,7 @@ getwd()
 #####import data set-----------------
 #import data set
 df <- read_csv("data/raw.csv")
+df <- read_csv("C:/Users/holze/Documents/Temporal stability/temp_riskperception/data/raw.csv")
 
 #####rename column names ----------------------
 #look at variable names
@@ -656,12 +657,8 @@ new_df$correlation_results_1.8[83] <- "0.54"
 new_df$correlation_results_1[215] <- "-0.3784"
 new_df$correlation_results_1[161] <- "-0.19"
 
-new_df$correlation_results_1[207] <- "0.52"
-new_df$correlation_results_1.1[207] <- "0.57"
-new_df$correlation_results_1.2[207] <- "0.54"
-new_df$correlation_results_1.3[207] <- "0.26"
-new_df$correlation_results_1.4[207] <- "0.61"
-new_df$correlation_results_1.5[207] <- "0.68"
+df_edit$`how was it analyzed variable 1`[207] <- "temporal trend"
+df_edit$`how was it analyzed variable 1`[163] <- "test-retest"
 
 new_df$correlation_results_1[77] <- "0.295"
 new_df$correlation_results_1.1[77] <- "0.224"
@@ -683,8 +680,8 @@ new_df$correlation_results_1[205] <- "0.63"
 new_df$correlation_results_1[237] <- "0.97"
 new_df$correlation_results_1[186] <- "0.83"
 new_df$correlation_results_1[238] <- "0.91"
-new_df$correlation_results_1[27] <- "-0.6188"
-new_df$correlation_results_1[39] <- "0.815"
+
+
 
 
 
