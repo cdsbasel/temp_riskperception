@@ -8,12 +8,14 @@
 
 # PACKAGES ---------------------------------------------------------------
 #install.packages("brms")
-#install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
+install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")))
 #install.packages("loo")
 #install.packages("bayesplot")
 #install.packages("tidybayes")
 #install.packages("posterior")
 #install.packages("janitor")
+#install.packages("openxlsx")
+#install.packages("metafor")
 
 library(tidyverse)
 library(brms)
@@ -24,26 +26,28 @@ library(tidybayes)
 library(posterior)
 library(here)
 library(janitor)
+library(openxlsx)
+library(metafor)
+cmdstanr::install_cmdstan()
+library(cmdstanr)
+
 
 color_scheme_set("teal")
 
-# FUNCTIONS ----------------------------------------------------------------
-
-source("helper_functions.R")
-
-#path
+# PATH ---------------------------------------------------------------
 setwd(here())
 getwd()
 
-#data
-df <- read_csv("data/final.csv")
+# DATA ---------------------------------------------------------------
+#df_prep <- read_csv("data/final.csv")
+
 
 #cleaning columns names
-df <- clean_names(df)
+df_prep <- clean_names(df_prep)
 
 
-selected_columns <- select(df, x1, author, paper_title, study_design, risk_1:risk_5, 
-                           intervention_yesno_1:intervention_yesno_5, 
+selected_columns <- select(df_prep, x1, author, paper_title, study_design, risk_1:risk_5, 
+                           intervention_yesno_1:intervention_yesno_5, temporal_analysis_1:temporal_analysis_5,
                            exposure_yesno_1:exposure_yesno_5, health, nature, crime, finance, 
                            nuclear, political, social, 
                            correlation_results_1_1:correlation_results_1_8, correlation_results_1:correlation_results_5, 
@@ -52,7 +56,7 @@ selected_columns <- select(df, x1, author, paper_title, study_design, risk_1:ris
                            age_category_1:age_category_5, country_1:country_5, sample_size_1:sample_size_5, 
                            prop_female_1:prop_female_5, mean_age_1:mean_age_5, sd_age_1:sd_age_5)
 
-  
+
 # Attempt to pivot the selected columns
 df_pivoted <- selected_columns %>%
   mutate_all(as.character()) %>%
@@ -66,16 +70,19 @@ df_pivoted <- selected_columns %>%
 df_filtered<- df_pivoted %>%
   filter(!is.na(val))
 
-# Separate only the rows with "correlation_results" prefix in the var column
-df_filtered_separated <- df_pivoted %>%
-  filter(str_detect(var, "correlation_results")) %>%
-  separate(var, into = c("correlation_name", "correlation_value"), sep = ":")
+filtered_rows <- df_filtered %>%
+  filter(var %in% paste0("temporal_analysis_", 1:5), val == 1)
+
+# Group by ID variable and keep only those groups where all temporal_analysis values have val = 1
+filtered_groups <- filtered_rows %>%
+  group_by(x1) %>%
+  filter(all(val == 1))
+
+# If you want to keep only x1 rows that satisfy the condition
+df_filtered <- df_filtered %>%
+  filter(x1 %in% filtered_groups$x1)
 
 
-df_filtered <- df_pivoted %>%
-  filter(!is.na(val))
-
-######################################################################
 # Separate the var column into correlation_name and correlation_value
 df_cor_results <- df_filtered %>%
   filter(str_detect(var, "correlation_results")) %>%
@@ -88,44 +95,156 @@ df_interval <- df_filtered %>%
   rename(interval_val = val)%>%
   select(-author, -paper_title, -study_design)
 
-df_size <- df_filtered %>%
-  filter(str_detect(var, "sample_size")) %>%
-  separate(var, into = c("sample_name"), sep = ":") %>%
-  rename(sample_val = val)%>%
-  select(-author, -paper_title, -study_design)
 
-df_study <- df_filtered %>%
-  filter(str_detect(var, "study")) %>%
-  separate(var, into = c("study_name"), sep = ":") %>%
-  rename(study_val = val)%>%
-  select(-author, -paper_title)
+#add correlation interval
+cor_num <- gsub("correlation_results_", "", df_cor_results$cor_name)
+
+modified_interval_names <- paste0("test_retest_interval_", cor_num)
+
+df_cor_results$interval_name <- modified_interval_names
+
+df_cor <- merge(df_cor_results, df_interval, by = c("interval_name", "x1"), all.x = TRUE)
+
+df_cor <- df_cor %>% select(-interval_name)
+
+df_cor$cor_val <- as.numeric(df_cor$cor_val)
+
+write.xlsx(df_cor, file = "data/cor.xlsx")
+
+####
+#rest of data filled in manually from raw data and covidence extractions
+####
+
+df <- read.xlsx("data/cor_final.xlsx")
+
+#manipulate data
+mean(df$female, na.rm=T)
+mean(df$age, na.rm=T)
+df$interval_val <- df$interval_val/365
+plot(df$interval_val, df$cor_val)
+
+df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val), 
+                    age_dec_c = (age-40)/10,
+                    age_dec_c2 = age_dec_c^2,
+                    female_c = (female-0.50))
+
+df <- escalc(measure = "COR", ri=cor_val, ni=n, data=df)
+df$sei <- sqrt(df$vi)
+
+# MODEL FITTING ---------------------------------------------------------------
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+
+formula <- bf(
+  cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + age_dec_c + age_dec_c2 + female_c + (1|author),
+  logitchange ~ 1 + age_dec_c + age_dec_c2 + female_c+ (1|author),
+  logitstabch ~ 1 + age_dec_c+ age_dec_c2  + female_c+ (1|author),
+  nl = TRUE
+)
 
 
-merged_df <- left_join(df_cor_results, df_interval, by = "x1")
+
+# Define the weakly informative priors
+priors <-
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc <- brm(
+  formula = formula,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  # backend = "cmdstanr",
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
 
 
-#this looks weird-----------------
 
-###### do it again like previously and try to follow alexandras comments
+# MODEL EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
-# Attempt to pivot the selected columns
-df_1 <- selected_columns %>%  mutate_all(as.character()) %>%
-  mutate_if(is.logical, as.character) %>%
-  mutate_if(is.double, as.character) %>%
-  pivot_longer(-c(x1, author, paper_title, study_design),  # Columns to exclude from pivot
-               names_to = "var",
-               values_to = "val")
+# model summary 
+fit_masc
 
-# Print out the first few rows of df_pivoted to check the result
-head(df_pivoted)
 
-# Filter out rows with NA values in the val column
-df_2 <- df_1 %>%
-  filter(!is.na(val))
+# trace plots & param. estimates
+plot(fit_masc, N = 5, ask = TRUE)
 
-#Alexandra: So already based on this data structure you can run a very simple (intercept only without weights) version of MASC.
 
-#######
 
+# MODEL EVAL: PP CHECKS --------------------------------------------------------
+summary(fit_masc)
+
+# simulations vs. obs: Overall
+pp_check(fit_masc,
+         type ="dens_overlay",
+         ndraws = 100)
+
+
+pp_check(fit_masc,
+         type ="stat",
+         stat = "mean",
+         ndraws = 1000,
+         binwidth = .001)
+
+pp_check(fit_masc,
+         type ="stat",
+         stat = "sd",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc,
+         type ="stat",
+         stat = "median",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc,
+         type ="stat",
+         stat = "mad",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc,
+         type ="stat_2d")
+
+
+pp_check(fit_masc,
+         type ="scatter_avg")
+
+
+# MODEL EVAL: LOO --------------------------------------------------------
+##NOT WORKINGGGGGGGGGGGGGGGGGGG!!!!!!!!!!!!!!!!!!
+
+# loo & pareto K
+model_loo <- loo(fit_masc, save_psis = TRUE, cores = 2)
+plot(model_loo, diagnostic = "k")
+plot(model_loo, diagnostic = "n_eff")
+
+# loo pit
+w <- weights(model_loo$psis_object)
+ppc_loo_pit_overlay(y = fit_masc$data$cor_val, 
+                    yrep = posterior_predict(fit_masc), 
+                    lw = w)
+ppc_loo_pit_qq(y = fit_masc$data$cor_val, 
+               yrep = posterior_predict(fit_masc), 
+               lw = w)
+
+###predictions
 
 
