@@ -35,6 +35,7 @@ library(cmdstanr)
 color_scheme_set("teal")
 
 # PATH ---------------------------------------------------------------
+#set working directory
 setwd(here())
 getwd()
 

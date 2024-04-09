@@ -1,49 +1,54 @@
 ---
 # DESCRIPTION -------------------------------------------------------------
 
-# In this script we process the data for the scoping review
+# In this script we visualize the data for the scoping review.
 
 # Author(s): Amanda Holzer(1), Arzie Bajrami(1), Rui Mata(1)
 # (1)Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
 
-title: "scoping review"
-author: "Amanda Holzer"
-date: "2024-02-24"
+title: "Visualizations for Scoping Review"
+author: "Amanda Holzer, Arzie Bajrami"
+date: "2024-04-09"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-#####Prep ------------------
+# PACKAGES ---------------------------------------------------------------
 #load packages 
 #install.packages("dplyr")
 #install.packages("here")
+#install.packages("viridis")
+#install.packages("tidyverse")
 library(dplyr)
 library(here)
 library(readr)
-#install.packages("tidyverse")
 library(tidyverse)
 library(ggplot2)
+library(knitr)
+library(viridis)
 
+# PATH ---------------------------------------------------------------
 #set working directory
-setwd(here("C:/Users/holze/Documents/Temporal stability/temp_riskperception"))
+setwd(here())
+here("data/final.csv")
 getwd()
+
+# DATA ---------------------------------------------------------------
+#Import the data set
+df_final <- read_csv(here("data", "final.csv"))
 ```
 
-
-Import the data set
-```{r, include=FALSE}
-df_final <- read_csv("data/final.csv")
-```
-
-
-
-# analysis visual -----------------
-
-
-###plot domains with study design--------
-
-# Function to create a single horizontal bar plot for counts of 1
+## Study Characteristics
 ```{r}
+## Table study design
+table_study_design <- table(df_final$study_design)
+print(table_study_design)
+```
+
+
+```{r}
+### plot domains with study design
+### Function to create a single horizontal bar plot for counts of 1
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -55,26 +60,26 @@ create_combined_horizontal_bar <- function(df) {
   # Arrange levels of 'variable' by count in ascending order
   df_long$variable <- factor(df_long$variable, levels = names(sort(table(df_long$variable), decreasing = FALSE)))
   
+  # Define custom colors using hex color codes
+  custom_colors <- c("#440154", "#22A884")  # Hex color codes without alpha
+  
   # Plotting the horizontal bar plot using ggplot2
   ggplot(df_long, aes(x = value, y = variable, fill = study_design)) +
     geom_bar(stat = "identity", position = position_stack(reverse = TRUE), color = NA) +  # Reverse the stacking order
-    scale_fill_manual(values = c("serial cross-sectional" = "red", "longitudinal" = "blue")) +
+    scale_fill_manual(values = setNames(custom_colors, unique(df_long$study_design))) +  # Apply custom colors to study_design levels
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
     labs(x = "Number of Studies", y = NULL, title = NULL) +  # Remove y-axis label and title
     xlab("Number of Studies")  # Set x-axis label
 }
-
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
 ```
 
 
-
+```{r}
 ###plot domain with measurement points-----
 #create measurement category with 2, 3, and 3+
-```{r}
-# Assuming df_final already exists and you want to modify it
 df_final <- df_final %>%
   mutate(measure = ifelse(times_measured_1 == 2, "2",
                           ifelse(times_measured_1 == 3, "3", "3+")))
@@ -91,10 +96,10 @@ create_combined_horizontal_bar <- function(df) {
   # Arrange levels of 'variable' by count in ascending order
   df_long$variable <- factor(df_long$variable, levels = names(sort(table(df_long$variable), decreasing = FALSE)))
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = value, y = variable, fill = measure)) +
     geom_bar(stat = "identity", position = position_stack(reverse = TRUE), color = NA) +  # Reverse the stacking order
-    scale_fill_manual(values = c("2" = "darkgreen", "3" = "seagreen", "3+" = "lightgreen")) +
+    scale_fill_viridis_d() +  # Use Viridis color palette for measure variable
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
     labs(x = "Number of Studies", y = NULL, title = NULL) +  # Remove y-axis label and title
@@ -106,9 +111,8 @@ create_combined_horizontal_bar(df_final)
 ```
 
 
-
-##make the bars a 100 percent. And not count anymore
 ```{r}
+##make the bars a 100 percent. And not count anymore
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -120,7 +124,7 @@ create_combined_horizontal_bar <- function(df) {
   # Set the order of the levels for the 'measure' column
   df_long$measure <- factor(df_long$measure, levels = c("3+", "3", "2"))
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = variable, fill = as.factor(measure))) +
     geom_bar(position = "fill", stat = "count", color = "white") +
     coord_flip() +  # Flip the coordinates for a horizontal bar plot
@@ -128,7 +132,7 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c("2" = "darkgreen", "3" = "seagreen", "3+" = "lightgreen"), name = "Measurement Points")  # Customize fill colors and legend title
+    scale_fill_viridis_d(name = "Measurement Points")  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
@@ -146,7 +150,7 @@ create_combined_horizontal_bar <- function(df) {
     gather(key = "variable", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = variable, fill = as.factor(risk_1))) +
     geom_bar(position = "fill", stat = "count", color = "white") +
     coord_flip() +  # Flip the coordinates for a horizontal bar plot
@@ -154,9 +158,7 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c(
-      "risk" = "darkgreen", "worry" = "seagreen", "concern" = "lightgreen", "threat" = "green"
-    ), name = "Risk Categories")  # Customize fill colors and legend title
+    scale_fill_viridis_d(name = "Risk Categories")  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
@@ -174,7 +176,7 @@ create_combined_horizontal_bar <- function(df) {
     gather(key = "variable", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = variable, fill = as.factor(measured_1))) +
     geom_bar(position = "fill", stat = "count", color = "white") +
     coord_flip() +  # Flip the coordinates for a horizontal bar plot
@@ -182,9 +184,7 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c(
-      "scale" = "darkgreen", "single item" = "seagreen"
-    ), name = "Measurement Categories")  # Customize fill colors and legend title
+    scale_fill_viridis_d(name = "Measurement Categories")  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
@@ -205,7 +205,7 @@ create_combined_horizontal_bar <- function(df) {
   # Create a new factor combining intervention and exposure columns
   df_long$factor_combined <- interaction(df_long$intervention_yesno_1, df_long$exposure_yesno_1)
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = variable, fill = factor_combined)) +
     geom_bar(position = "fill", stat = "count", color = "white") +
     coord_flip() +  # Flip the coordinates for a horizontal bar plot
@@ -213,56 +213,16 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c(
-      "0.0" = "darkgreen", 
-      "0.1" = "seagreen",
-      "1.0" = "pink",
-      "1.1" = "lightgreen"
-    ), name = "Intervention and Exposure (Yes/No)", labels = c(
+    scale_fill_viridis_d(name = "Intervention and Exposure (Yes/No)", labels = c(
       "No Intervention, No Exposure",
       "No Intervention, Exposure",
       "Intervention, No Exposure",
       "Intervention, Exposure"
-    ))  # Customize fill colors and legend title
+    ))  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
-```
-
-
-```{r}
-# temporal analysis 
-create_combined_horizontal_bar_temporal <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "variable", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Create a new factor for temporal analysis column
-  df_long$factor_combined <- as.factor(df_long$temporal_analysis_1)
-  
-  # Plotting the horizontal bar plot using ggplot2
-  ggplot(df_long, aes(x = variable, fill = factor_combined)) +
-    geom_bar(position = "fill", stat = "count", color = "white") +
-    coord_flip() +  # Flip the coordinates for a horizontal bar plot
-    theme_minimal() +
-    theme(panel.grid = element_blank(), panel.border = element_blank(),
-          axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
-    labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c(
-      "0" = "darkgreen", 
-      "1" = "seagreen"
-    ), name = "Temporal Analysis", labels = c(
-      "No Analysis",
-      "Analyzed"
-    ))  # Customize fill colors and legend title
-}
-
-# Apply the function to df_final
-create_combined_horizontal_bar_temporal(df_final)
 ```
 
 
@@ -279,7 +239,7 @@ create_combined_horizontal_bar_data <- function(df) {
     gather(key = "variable", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the horizontal bar plot using ggplot2
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = variable, fill = as.factor(data_availability_1))) +
     geom_bar(position = "fill", stat = "count", color = "white") +
     coord_flip() +  # Flip the coordinates for a horizontal bar plot
@@ -287,13 +247,10 @@ create_combined_horizontal_bar_data <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_manual(values = c(
-      "0" = "darkgreen", 
-      "1" = "seagreen"
-    ), name = "Data Availability", labels = c(
+    scale_fill_viridis_d(name = "Data Availability", labels = c(
       "No Data",
       "Data Available"
-    ))  # Customize fill colors and legend title
+    ))  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
@@ -301,42 +258,9 @@ create_combined_horizontal_bar_data(df_final)
 ```
 
 
-
-####correlation plotting with time interval
 ```{r}
-# Create a scatter plot with a correlation line
-ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
-  geom_point() +  # Scatter plot
-  geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Add a linear regression line
-  scale_color_manual(values = c("0" = "black", "1" = "red"), name = "Health") +  # Specify color for health values and set legend title
-  theme_minimal() +  # Minimal theme
-  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)+
-  ylim(0,1)
-```
-
-
-```{r}
-# Create a scatter plot with a correlation line
-ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
-  geom_point() +  # Scatter plot
-  geom_smooth(method = "lm", se = FALSE, color = "blue") +  # Add a linear regression line
-  scale_color_manual(values = c("0" = "black", "1" = "red"), name = "Health") +  # Specify color for health values and set legend title
-  theme(
-    panel.background = element_rect(fill = "white"),  # Set background color to white
-    panel.grid.major = element_blank(),  # Remove major grid lines
-    panel.grid.minor = element_blank(),  # Remove minor grid lines
-    axis.line = element_line(color = "black"),  # Set axis line color
-    legend.position = "bottom"  # Position legend at the bottom
-  ) +
-  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL)+
-  ylim(0,1)
-```
-
-
-
 ##density plots----- 
 ###number of studies----
-```{r}
 # Function to create separate density plots for each category
 create_separate_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -346,14 +270,11 @@ create_separate_density_plots <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the separate density plots using ggplot2
+  # Plotting the separate density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = times_measured_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_wrap(~category, scales = "free_y") +  # Separate plots for each category
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d(name = "Category") +  # Use Viridis color palette and set legend title
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
     labs(x = "Times Measured", y = "Density", title = NULL) +  # Set labels
@@ -366,8 +287,9 @@ create_separate_density_plots(df_final)
 
 
 
-###measurment points ----
+
 ```{r}
+###measurment points ----
 # Function to create stacked density plots for each category
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -377,14 +299,11 @@ create_stacked_density_plots <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = times_measured_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d(name = "Category") +  # Use Viridis color palette and set legend title
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
     labs(x = "Times Measured", y = "Density", title = NULL) +  # Set labels
@@ -406,20 +325,16 @@ create_stacked_density_plots <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = times_measured_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d(name = "Category") +  # Use Viridis color palette and set legend title
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
     labs(x = "Times Measured", y = "Density", title = NULL) +  # Set labels
     xlim(2, 10)  # Set x-axis limits
 }
-
 # Apply the function to df_final
 create_stacked_density_plots(df_final)
 ```
@@ -435,17 +350,14 @@ create_stacked_density_plots <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = sample_size_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d(name = "Category") +  # Use Viridis color palette and set legend title
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
-    labs(x = "sample size", y = "Density", title = NULL) +  # Set labels
+    labs(x = "Sample Size", y = "Density", title = NULL) +  # Set labels
     xlim(0, 1000)  # Set x-axis limits
 }
 
@@ -455,48 +367,8 @@ create_stacked_density_plots(df_final)
 
 
 
-###create a density plot for days apart between the measurement------
 ```{r}
-# Create a new column by combining values from the three columns
-df_final <- df_final %>%
-  mutate(combined_column = paste(`test-retest_interval_1`, `temporal_trend_interval_1`, `mean_difference_interval_1`, sep = "_"))
-# Remove non-numeric characters from the combined_column
-df_final$combined_column <- gsub("[^0-9.]", "", df_final$combined_column)
-
-# Convert the combined_column to numeric
-df_final$combined_column <- as.numeric(df_final$combined_column)
-
-
-# Function to create stacked density plots for each category
-create_stacked_density_plots <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "category", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Plotting the stacked density plots using ggplot2
-  ggplot(df_long, aes(x = combined_column, fill = category)) +
-    geom_density(alpha = 0.5) +  # Density plot with transparency
-    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
-    theme_minimal() +
-    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
-    labs(x = "Time interval", y = "Density", title = NULL) +  # Set labels
-    xlim(2, 1000)  # Set x-axis limits
-}
-
-# Apply the function to df_final
-create_stacked_density_plots(df_final)
-```
-
-
 ### publishing year---
-```{r}
 create_stacked_density_plots <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -505,14 +377,11 @@ create_stacked_density_plots <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = publication_year, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d() +  # Use Viridis color palette for fill
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
     labs(x = "Publication Year", y = "Density", title = NULL)  # Set labels
@@ -523,8 +392,8 @@ create_stacked_density_plots(df_final)
 ```
 
 
-###item number----
 ```{r}
+###item number----
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -533,14 +402,11 @@ create_stacked_density_plots_item <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = item_number_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d() +  # Use Viridis color palette for fill
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
     labs(x = "Item Number", y = "Density", title = NULL) +  # Set labels
@@ -552,8 +418,8 @@ create_stacked_density_plots_item(df_final)
 ```
 
 
-###time measured----
 ```{r}
+###time measured----
 create_stacked_density_plots_item <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
@@ -562,89 +428,59 @@ create_stacked_density_plots_item <- function(df) {
     gather(key = "category", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
   ggplot(df_long, aes(x = times_measured_1, fill = category)) +
     geom_density(alpha = 0.5) +  # Density plot with transparency
     facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+    scale_fill_viridis_d() +  # Use Viridis color palette for fill
     theme_minimal() +
     theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
-    labs(x = "times measured", y = "Density", title = NULL) +  # Set labels
+    labs(x = "Times Measured", y = "Density", title = NULL) +  # Set labels
     xlim(1, 10)  # Set x-axis limits
 }
-
 # Apply the function to df_final
 create_stacked_density_plots_item(df_final)
 ```
 
 
-###female male----
+
+## Temporal Analysis
 ```{r}
-create_stacked_density_plots_item <- function(df) {
+# temporal analysis 
+create_combined_horizontal_bar_temporal <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
   # Create a long-format data frame for ggplot
   df_long <- df %>%
-    gather(key = "category", value = "value", columns_of_interest) %>%
+    gather(key = "variable", value = "value", columns_of_interest) %>%
     filter(value == 1)  # Filter only rows where the value is 1
   
-  # Plotting the stacked density plots using ggplot2
-  ggplot(df_long, aes(x = prop_female_1, fill = category)) +
-    geom_density(alpha = 0.5) +  # Density plot with transparency
-    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
+  # Create a new factor for temporal analysis column
+  df_long$factor_combined <- as.factor(df_long$temporal_analysis_1)
+  
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = variable, fill = factor_combined)) +
+    geom_bar(position = "fill", stat = "count", color = "white") +
+    coord_flip() +  # Flip the coordinates for a horizontal bar plot
     theme_minimal() +
-    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
-    labs(x = "female percentage", y = "Density", title = NULL) +  # Set labels
-    xlim(0, 1)  # Set x-axis limits
+    theme(panel.grid = element_blank(), panel.border = element_blank(),
+          axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
+    labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
+    scale_fill_viridis_d(name = "Temporal Analysis", labels = c(
+      "No Analysis",
+      "Analyzed"
+    ))  # Use Viridis color palette and customize legend title
 }
-
 # Apply the function to df_final
-create_stacked_density_plots_item(df_final)
+create_combined_horizontal_bar_temporal(df_final)
 ```
 
-###age (age and age category)----
+
 ```{r}
-# Convert the column to numeric
-df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
-create_stacked_density_plots_item <- function(df) {
-  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
-  
-  # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "category", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
-  
-  # Plotting the stacked density plots using ggplot2
-  ggplot(df_long, aes(x = mean_age_1, fill = category)) +
-    geom_density(alpha = 0.5) +  # Density plot with transparency
-    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
-    scale_fill_manual(values = c(
-      "health" = "darkgreen", "finance" = "blue", "political" = "purple",
-      "crime" = "orange", "nature" = "red", "nuclear" = "brown", "social" = "cyan"
-    )) +  # Specify colors for each category
-    theme_minimal() +
-    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
-    labs(x = "mean age", y = "Density", title = NULL) +  # Set labels
-    xlim(4, 70)  # Set x-axis limits
-}
-
-# Apply the function to df_final
-create_stacked_density_plots_item(df_final)
-```
-
-
 #correlation plot (correlation&time interval)----
 
 ##create a dataframe with all the correlations for a better overview.----
 
-```{r}
 # Combine the correlation results columns into one
 correlation_results <- c(df_final$correlation_results_1, df_final$correlation_results_1.1,
                          df_final$correlation_results_1.2, df_final$correlation_results_1.3,
@@ -715,12 +551,12 @@ correlation <- rbind(correlation_1, correlation_2, correlation_3, correlation_4,
 ```
 
 
-###plot----
 ```{r, warning=FALSE}
+###plot----
 # Plot the two columns against each other with x-axis limited to 800 and a correlation line
 ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "blue") + # Add correlation line
+  geom_smooth(method = "lm", se = FALSE, color = viridis(1)) + # Add correlation line
   labs(x = "Correlation Interval", y = "Correlation Results") +
   xlim(0, 800) +
   ylim(0,1)
@@ -734,10 +570,10 @@ correlation_coefficient <- cor(correlation$correlation_interval_1, correlation$c
 # Plot the two columns against each other with x-axis limited to 800 and a correlation line
 ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
   geom_point() +
-  geom_smooth(method = "lm", se = FALSE, color = "blue") + # Add correlation line
+  geom_smooth(method = "lm", se = FALSE, color = viridis(1)) + # Add correlation line
   annotate("text", x = 400, y = 0.75, 
            label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
-           color = "blue", size = 4) +  # Add correlation coefficient annotation
+           color = viridis(1), size = 4) +  # Add correlation coefficient annotation
   labs(x = "Correlation Interval", y = "Correlation Results") +
   xlim(0, 800) +
   ylim(0, 1)
@@ -746,7 +582,127 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
 
 ####minimal indication that over time the correlation coefficient decreases. 
 
-
-
 ```
+
+
+```{r}
+####correlation plotting with time interval
+# Create a scatter plot with a correlation line
+ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
+  geom_point() +  # Scatter plot
+  geom_smooth(method = "lm", se = FALSE, color = viridis(1)) +  # Add a linear regression line
+  scale_color_viridis_d(name = "Health") +  # Use Viridis color palette and set legend title
+  theme_minimal() +  # Minimal theme
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL) +
+  ylim(0, 1)
+```
+
+
+```{r}
+# Create a scatter plot with a correlation line
+ggplot(df_final, aes(x = `test-retest_interval_1`, y = correlation_results_1, color = as.factor(health))) +
+  geom_point() +  # Scatter plot
+  geom_smooth(method = "lm", se = FALSE, color = viridis(1)) +  # Add a linear regression line
+  scale_color_viridis_d(name = "Health") +  # Specify color for health values and set legend title
+  theme_minimal() +  # Minimal theme
+  theme(
+    panel.background = element_rect(fill = "white"),  # Set background color to white
+    panel.grid.major = element_blank(),  # Remove major grid lines
+    panel.grid.minor = element_blank(),  # Remove minor grid lines
+    axis.line = element_line(color = "black"),  # Set axis line color
+    legend.position = "bottom"  # Position legend at the bottom
+  ) +
+  labs(x = "Time Interval in days", y = "Correlation Results", title = NULL) +  # Set axis labels and title
+  ylim(0, 1)  # Set y-axis limits
+```
+
+
+```{r}
+###create a density plot for days apart between the measurement------
+# Create a new column by combining values from the three columns
+df_final <- df_final %>%
+  mutate(combined_column = paste(`test-retest_interval_1`, `temporal_trend_interval_1`, `mean_difference_interval_1`, sep = "_")) %>%
+  mutate(combined_column = as.numeric(gsub("[^0-9.]", "", combined_column)))
+
+# Function to create stacked density plots for each category with Viridis color scale
+create_stacked_density_plots <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "category", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = combined_column, fill = category)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
+    scale_fill_viridis_d() +  # Use Viridis color palette for fill
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
+    labs(x = "Time Interval", y = "Density", title = NULL) +  # Set labels
+    xlim(2, 1000)  # Set x-axis limits
+}
+
+# Apply the function to df_final
+create_stacked_density_plots(df_final)
+```
+
+
+
+## Population Characteristics
+```{r}
+###female male----
+create_stacked_density_plots_item <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "category", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the stacked density plots using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = prop_female_1, fill = category)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
+    scale_fill_viridis_d() +  # Use Viridis color palette for fill
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
+    labs(x = "Female Percentage", y = "Density", title = NULL) +  # Set labels
+    xlim(0, 1)  # Set x-axis limits
+}
+
+# Apply the function to df_final
+create_stacked_density_plots_item(df_final)
+```
+
+
+```{r}
+###age (age and age category)----
+# Convert the column to numeric
+df_final$mean_age_1 <- as.numeric(df_final$mean_age_1)
+create_stacked_density_plots_item <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "category", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the stacked density plots using ggplot2
+  ggplot(df_long, aes(x = mean_age_1, fill = category)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_grid(category ~ ., scales = "free_x", switch = "y") +  # Stacked plots with category names on the y-axis
+    scale_fill_viridis_d() +  # Specify colors for each category
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(), axis.text.y = element_blank()) +  # Remove grid lines, borders, and y-axis text
+    labs(x = "mean age", y = "Density", title = NULL) +  # Set labels
+    xlim(4, 70)  # Set x-axis limits
+}
+
+# Apply the function to df_final
+create_stacked_density_plots_item(df_final)
+```
+
+
 
