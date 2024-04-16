@@ -19,6 +19,8 @@ output: html_document
 #install.packages("here")
 #install.packages("viridis")
 #install.packages("tidyverse")
+#install.packages("devtools")
+devtools::install_github("dustinfife/flexplot")
 library(dplyr)
 library(here)
 library(readr)
@@ -26,6 +28,8 @@ library(tidyverse)
 library(ggplot2)
 library(knitr)
 library(viridis)
+library(devtools)
+library(flexplot)
 
 # PATH ---------------------------------------------------------------
 #set working directory
@@ -40,9 +44,73 @@ df_final <- read_csv(here("data", "final.csv"))
 
 ## Study Characteristics
 ```{r}
-## Table study design
+## Study design
+#Create table
 table_study_design <- table(df_final$study_design)
 print(table_study_design)
+prop.table(table_study_design) * 100 #percentage of study design
+```
+
+```{r}
+## Time measurement
+df_final <- df_final %>%
+  mutate(measure = ifelse(times_measured_1 == 2, "2",
+                          ifelse(times_measured_1 == 3, "3", "3+")))
+
+#percentage distribution 
+percentage_distribution <- df_final %>%
+  group_by(measure) %>%
+  summarise(count = n()) %>%
+  mutate(percentage = (count / sum(count)) * 100)
+
+print(percentage_distribution)
+```
+
+```{r}
+## Measurement type
+#Create table
+table_measured <- table(df_final$measured_1)
+prop.table(table_measured_1) * 100 #percentage of measurement type
+```
+
+```{r}
+## Intervention
+# Rename values for intervention_yesno_1
+df_final <- df_final %>%
+  mutate(
+    intervention_yesno_1 = ifelse(intervention_yesno_1 == 0, "No Intervention", "Intervention")
+  )
+
+#Create table
+table_intervention <- table(df_final$intervention_yesno_1)
+prop.table(table_intervention) * 100 #percentage of measurement type
+```
+
+```{r}
+## Exposure
+# Rename values for exposure_yesno_1
+df_final <- df_final %>%
+  mutate(
+    exposure_yesno_1 = ifelse(exposure_yesno_1 == 0, "No Exposure", "Intervention")
+  )
+
+#Create table
+table_exposure <- table(df_final$exposure_yesno_1)
+prop.table(table_exposure) * 100 #percentage of measurement type
+```
+
+```{r}
+## data availability
+df_final <- df_final %>%
+  mutate(
+    data_availability = ifelse(is.na(data_availability), "No Data Available", "Data Available")
+  )
+
+# percentage distribution
+percentage_distribution <- df_final %>%
+  count(data_availability) %>%
+  mutate(percentage = n / sum(n) * 100)
+
 ```
 
 
