@@ -720,7 +720,612 @@ ggplot(correlation, aes(x = correlation_interval_1, y = correlation_results)) +
 ####minimal indication that over time the correlation coefficient decreases. 
 
 
-
+  #Subdomain-------
+  
+  ###plot subdomains with study design
+  ####study_design
+  
+  # Function to create a horizontal bar plot for counts of each category in health_sub_1
+  create_horizontal_bar_plot <- function(df) {
+    # Filter out NA values in health_sub_1 column
+    df <- df[!is.na(df$health_sub_1), ]
+    
+    # Count occurrences of each category in health_sub_1
+    health_sub_1_counts <- df %>%
+      count(health_sub_1) %>%
+      arrange(desc(n)) %>%
+      pull(health_sub_1)
+    
+    # Reorder levels of health_sub_1 according to counts
+    df$health_sub_1 <- factor(df$health_sub_1, levels = rev(health_sub_1_counts))  # Reverse order
+    
+    # Plotting the horizontal bar plot using ggplot2
+    ggplot(df, aes(x = health_sub_1, fill = study_design)) +
+      geom_bar() +
+      theme_minimal() +
+      theme(panel.grid = element_blank()) +  # Remove gridlines
+      labs(x = "health subdomain", y = "Count") +
+      coord_flip()  # Flip coordinates for horizontal bars
+  }
+  
+  # Apply the function to df_final
+  create_horizontal_bar_plot(df_final)
+  
+  
+  
+  ##measurement points
+  ###create measurement category with 2, 3, and 3+
+  
+  # Function to create a horizontal bar plot for counts of each category in health_sub_1
+  create_horizontal_bar_plot <- function(df) {
+    # Filter out NA values in health_sub_1 column
+    df <- df[!is.na(df$health_sub_1), ]
+    
+    # Count occurrences of each category in health_sub_1
+    health_sub_1_counts <- df %>%
+      count(health_sub_1) %>%
+      arrange(desc(n)) %>%
+      pull(health_sub_1)
+    
+    # Reorder levels of health_sub_1 according to counts
+    df$health_sub_1 <- factor(df$health_sub_1, levels = rev(health_sub_1_counts))  # Reverse order
+    
+    # Create measure variable
+    df <- df %>%
+      mutate(measure = ifelse(times_measured_1 == 2, "2",
+                              ifelse(times_measured_1 == 3, "3", "3+")))
+    
+    # Plotting the horizontal bar plot using ggplot2
+    ggplot(df, aes(x = health_sub_1, fill = measure)) +
+      geom_bar() +
+      scale_fill_manual(values = c("2" = "skyblue", "3" = "orange", "3+" = "red")) +  # Custom color palette
+      theme_minimal() +
+      theme(panel.grid = element_blank()) +  # Remove gridlines
+      labs(x = "health subdomain", y = "Count") +
+      coord_flip()  # Flip coordinates for horizontal bars
+  }
+  
+  # Apply the function to df_final
+  create_horizontal_bar_plot(df_final)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  library(ggplot2)
+  library(dplyr)
+  
+  # Function to create a horizontal bar plot for counts of each category in health_sub_1
+  create_horizontal_bar_plot <- function(df) {
+    # Filter out NA values in health_sub_1 column
+    df <- df[!is.na(df$health_sub_1), ]
+    
+    # Count occurrences of each category in health_sub_1
+    health_sub_1_counts <- df %>%
+      count(health_sub_1) %>%
+      arrange(desc(n)) %>%
+      pull(health_sub_1)
+    
+    # Reorder levels of health_sub_1 according to counts
+    df$health_sub_1 <- factor(df$health_sub_1, levels = rev(health_sub_1_counts))  # Reverse order
+    
+    # Create measure variable
+    df <- df %>%
+      mutate(measure = ifelse(times_measured_1 == 2, "2",
+                              ifelse(times_measured_1 == 3, "3", "3+")))
+    
+    # Plotting the horizontal bar plot using ggplot2
+    ggplot(df, aes(x = health_sub_1, fill = measure)) +
+      geom_bar() +
+      scale_fill_manual(values = c("2" = "skyblue", "3" = "orange", "3+" = "red")) +  # Custom color palette
+      theme_minimal() +
+      theme(panel.grid = element_blank()) +  # Remove gridlines
+      labs(x = "health subdomain", y = "Count") +
+      coord_flip()  # Flip coordinates for horizontal bars
+  }
+  
+  # Apply the function to df_final
+  create_horizontal_bar_plot(df_final)
+  
+  #####make the bars 100%%%
+  
+  # Function to create a horizontal bar plot with normalized lengths for each category in health_sub_1
+  create_horizontal_bar_plot <- function(df) {
+    # Filter out NA values in health_sub_1 column
+    df <- df[!is.na(df$health_sub_1), ]
+    
+    # Count occurrences of each category in health_sub_1
+    health_sub_1_counts <- df %>%
+      count(health_sub_1) %>%
+      arrange(desc(n)) %>%
+      pull(health_sub_1)
+    
+    # Reorder levels of health_sub_1 according to counts
+    df$health_sub_1 <- factor(df$health_sub_1, levels = rev(health_sub_1_counts))  # Reverse order
+    
+    # Create measure variable
+    df <- df %>%
+      mutate(measure = ifelse(times_measured_1 == 2, "2",
+                              ifelse(times_measured_1 == 3, "3", "3+")))
+    
+    # Calculate total count for each health_sub_1 category
+    total_counts <- df %>%
+      group_by(health_sub_1) %>%
+      summarise(total = sum(times_measured_1)) %>%
+      ungroup()
+    
+    # Merge total counts back to the main dataframe
+    df <- left_join(df, total_counts, by = "health_sub_1")
+    
+    # Calculate proportions for each category
+    df <- df %>%
+      mutate(prop = times_measured_1 / total)
+    
+    # Plotting the horizontal bar plot using ggplot2
+    ggplot(df, aes(x = health_sub_1, y = prop, fill = measure)) +
+      geom_bar(stat = "identity") +
+      scale_fill_manual(values = c("2" = "skyblue", "3" = "orange", "3+" = "red")) +  # Custom color palette
+      theme_minimal() +
+      theme(panel.grid = element_blank()) +  # Remove gridlines
+      labs(x = "health subdomain", y = "Proportion") +
+      coord_flip()  # Flip coordinates for horizontal bars
+  }
+  
+  # Apply the function to df_final
+  create_horizontal_bar_plot(df_final)
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  ###how risk is made up in the subdomains  
+  
+  # Function to create a horizontal bar plot with normalized lengths for each category in health_sub_1
+  create_horizontal_bar_plot <- function(df) {
+    # Filter out NA values in health_sub_1 column
+    df <- df[!is.na(df$health_sub_1), ]
+    
+    # Count occurrences of each category in health_sub_1
+    health_sub_1_counts <- df %>%
+      count(health_sub_1) %>%
+      arrange(desc(n)) %>%
+      pull(health_sub_1)
+    
+    # Reorder levels of health_sub_1 according to counts
+    df$health_sub_1 <- factor(df$health_sub_1, levels = rev(health_sub_1_counts))  # Reverse order
+    
+    # Create measure variable
+    df <- df %>%
+      mutate(measure = ifelse(times_measured_1 == 2, "2",
+                              ifelse(times_measured_1 == 3, "3", "3+")))
+    
+    # Calculate total count for each health_sub_1 category
+    total_counts <- df %>%
+      group_by(health_sub_1) %>%
+      summarise(total = sum(times_measured_1)) %>%
+      ungroup()
+    
+    # Merge total counts back to the main dataframe
+    df <- left_join(df, total_counts, by = "health_sub_1")
+    
+    # Calculate proportions for each category
+    df <- df %>%
+      mutate(prop = times_measured_1 / total)
+    
+    # Reorder levels of risk_1 according to your desired order
+    df$risk_1 <- factor(df$risk_1, levels = c("concern", "worry", "threat", "risk"))
+    
+    # Plotting the horizontal bar plot using ggplot2
+    ggplot(df, aes(x = health_sub_1, y = prop, fill = risk_1)) +
+      geom_bar(stat = "identity") +
+      scale_fill_manual(values = c("risk" = "skyblue", "threat" = "orange", "worry" = "green", "concern" = "red")) +
+      theme_minimal() +
+      theme(panel.grid = element_blank()) +  # Remove gridlines
+      labs(x = "health subdomain", y = "Proportion") +
+      coord_flip()  # Flip coordinates for horizontal bars
+  }
+  
+  # Apply the function to df_final
+  create_horizontal_bar_plot(df_final)
+  
+  
+  
+  ####making a density plot with the sample size
+  
+  
+  
+  # Define the categories you want to include
+  categories_to_include <- c("cancer", "dementia", "diabetes", "drug", "food safety")
+  
+  # Filter the dataframe to include only rows with the selected categories
+  df_filtered <- df_final[df_final$health_sub_1 %in% categories_to_include, ]
+  
+  # Plotting separate density plots for each selected category in health_sub_1 in rows
+  ggplot(df_filtered, aes(x = sample_size_1, fill = health_sub_1)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_wrap(~ health_sub_1, scales = "free_y", ncol = 1, strip.position = "left") +  # Separate plots for each selected category arranged in rows with category names on the y-axis
+    scale_fill_manual(values = rainbow(length(categories_to_include))) +  # Set colors
+    theme_minimal() +  # Minimal theme
+    theme(axis.text.y = element_text(size = 8, hjust = 1),  # Adjust text size and position for y-axis labels
+          strip.background = element_blank(),
+          panel.grid = element_blank()) +  # Remove background for facet labels and grid lines
+    labs(x = "Sample Size", y = "Density", fill = "Health Subdomain") +  # Axis labels and legend title
+    scale_y_continuous(breaks = NULL) +  # Remove y-axis numbers
+    xlim(0, 5000)  # Limit x-axis from 0 to 1000 (adjust limits as needed)
+  
+  
+  
+  
+  
+  
+  # Define the categories you want to include
+  categories_to_include <- c("questionnaire validation", "virus", "other",  "pregnancy", "mental health")
+  
+  # Filter the dataframe to include only rows with the selected categories
+  df_filtered <- df_final[df_final$health_sub_1 %in% categories_to_include, ]
+  
+  # Plotting separate density plots for each selected category in health_sub_1 in rows
+  ggplot(df_filtered, aes(x = sample_size_1, fill = health_sub_1)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_wrap(~ health_sub_1, scales = "free_y", ncol = 1, strip.position = "left") +  # Separate plots for each selected category arranged in rows with category names on the y-axis
+    scale_fill_manual(values = rainbow(length(categories_to_include))) +  # Set colors
+    theme_minimal() +  # Minimal theme
+    theme(axis.text.y = element_text(size = 8, hjust = 1),  # Adjust text size and position for y-axis labels
+          strip.background = element_blank(),
+          panel.grid = element_blank()) +  # Remove background for facet labels and grid lines
+    labs(x = "Sample Size", y = "Density", fill = "Health Subdomain") +  # Axis labels and legend title
+    scale_y_continuous(breaks = NULL) +  # Remove y-axis numbers
+    xlim(0, 5000)  # Limit x-axis from 0 to 5000 (adjust limits as needed)
+  
+  
+  
+  
+  
+  
+  
+  # Define the categories you want to include
+  categories_to_include <- c("questionnaire validation", "virus", "other",  "pregnancy", "mental health", "cancer", "dementia", "diabetes", "drug", "food safety")
+  
+  # Filter the dataframe to include only rows with the selected categories
+  df_filtered <- df_final[df_final$health_sub_1 %in% categories_to_include, ]
+  
+  # Plotting separate density plots for each selected category in health_sub_1 in rows
+  ggplot(df_filtered, aes(x = sample_size_1, fill = health_sub_1)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_wrap(~ health_sub_1, scales = "free_y", ncol = 1, strip.position = "left") +  # Separate plots for each selected category arranged in rows with category names on the y-axis
+    scale_fill_manual(values = rainbow(length(categories_to_include))) +  # Set colors
+    theme_minimal() +  # Minimal theme
+    theme(axis.text.y = element_text(size = 8, hjust = 1),  # Adjust text size and position for y-axis labels
+          strip.background = element_blank(),
+          panel.grid = element_blank()) +  # Remove background for facet labels and grid lines
+    labs(x = "Sample Size", y = "Density", fill = "Health Subdomain") +  # Axis labels and legend title
+    scale_y_continuous(breaks = NULL) +  # Remove y-axis numbers
+    xlim(0, 5000)  # Limit x-axis from 0 to 5000 (adjust limits as needed)
+  
+  
+  ###density plot for item number 
+  df_filtered$item_number_1    
+  
+  # Define the categories you want to include
+  categories_to_include <- c("questionnaire validation", "virus", "other",  "pregnancy", "mental health", "cancer", "dementia", "diabetes", "drug", "food safety")
+  
+  # Filter the dataframe to include only rows with the selected categories
+  df_filtered <- df_final[df_final$health_sub_1 %in% categories_to_include, ]
+  
+  # Plotting separate density plots for each selected category in health_sub_1 in rows
+  ggplot(df_filtered, aes(x = item_number_1, fill = health_sub_1)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_wrap(~ health_sub_1, scales = "free_y", ncol = 1, strip.position = "left") +  # Separate plots for each selected category arranged in rows with category names on the y-axis
+    scale_fill_manual(values = rainbow(length(categories_to_include))) +  # Set colors
+    theme_minimal() +  # Minimal theme
+    theme(axis.text.y = element_text(size = 8, hjust = 1),  # Adjust text size and position for y-axis labels
+          strip.background = element_blank(),
+          panel.grid = element_blank()) +  # Remove background for facet labels and grid lines
+    labs(x = "Item number", y = "Density", fill = "Health Subdomain") +  # Axis labels and legend title
+    scale_y_continuous(breaks = NULL) +  # Remove y-axis numbers
+    xlim(0, 40)  # Limit x-axis from 0 to 5000 (adjust limits as needed)
+  
+  
+  ### time interval
+  # Define the categories you want to include
+  categories_to_include <- c("questionnaire validation", "virus", "other", "mental health", "cancer", "drug")
+  
+  # Filter the dataframe to include only rows with the selected categories
+  df_filtered <- df_final[df_final$health_sub_1 %in% categories_to_include, ]
+  
+  # Plotting separate density plots for each selected category in health_sub_1 in rows
+  ggplot(df_filtered, aes(x = `test-retest_interval_1`, fill = health_sub_1)) +
+    geom_density(alpha = 0.5) +  # Density plot with transparency
+    facet_wrap(~ health_sub_1, scales = "free_y", ncol = 1, strip.position = "left") +  # Separate plots for each selected category arranged in rows with category names on the y-axis
+    scale_fill_manual(values = rainbow(length(categories_to_include))) +  # Set colors
+    theme_minimal() +  # Minimal theme
+    theme(axis.text.y = element_text(size = 8, hjust = 1),  # Adjust text size and position for y-axis labels
+          strip.background = element_blank(),
+          panel.grid = element_blank()) +  # Remove background for facet labels and grid lines
+    labs(x = "time interval", y = "Density", fill = "Health Subdomain") +  # Axis labels and legend title
+    scale_y_continuous(breaks = NULL) +  # Remove y-axis numbers
+    xlim(0, 800)  # Limit x-axis from 0 to 5000 (adjust limits as needed)
+  
+  
+  
+  
+  
+  
+  
+  ###correlation 
+  cor_res <- c(
+    df_$correlation_results_1, 
+    df_filtered$correlation_results_1.1,
+    df_filtered$correlation_results_1.2, 
+    df_filtered$correlation_results_1.3,
+    df_filtered$correlation_results_1.4, 
+    df_filtered$correlation_results_1.5,
+    df_filtered$correlation_results_1.6, 
+    df_filtered$correlation_results_1.7,
+    df_filtered$correlation_results_1.8,
+    df_filtered$health_sub_1)
+  
+  
+  cor_res_1 <- data.frame(
+    correlation_results = df_final$correlation_results_1,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  cor_res_1 <- na.omit(cor_res_1)
+  
+  cor_res_1.1 <- data.frame(
+    correlation_results = df_final$correlation_results_1.1,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.1 <- na.omit(cor_res_1.1)
+  
+  
+  
+  cor_res_1.2 <- data.frame(
+    correlation_results = df_final$correlation_results_1.2,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.2 <- na.omit(cor_res_1.2)
+  
+  cor_res_1.3 <- data.frame(
+    correlation_results = df_final$correlation_results_1.3,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.3 <- na.omit(cor_res_1.3)
+  
+  
+  cor_res_1.4 <- data.frame(
+    correlation_results = df_final$correlation_results_1.4,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.4 <- na.omit(cor_res_1.4)
+  
+  
+  cor_res_1.5 <- data.frame(
+    correlation_results = df_final$correlation_results_1.5,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.5 <- na.omit(cor_res_1.5)
+  
+  cor_res_1.6 <- data.frame(
+    correlation_results = df_final$correlation_results_1.6,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.6 <- na.omit(cor_res_1.6)
+  
+  
+  cor_res_1.7 <- data.frame(
+    correlation_results = df_final$correlation_results_1.7,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.7 <- na.omit(cor_res_1.7)
+  
+  
+  
+  cor_res_1.8 <- data.frame(
+    correlation_results = df_final$correlation_results_1.8,
+    test_retest_interval = df_final$`test-retest_interval_1`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_1.8 <- na.omit(cor_res_1.8)
+  
+  
+  cor_res_2 <- data.frame(
+    correlation_results = df_final$correlation_results_2,
+    test_retest_interval = df_final$`test-retest_interval_2`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_2 <- na.omit(cor_res_2)
+  
+  cor_res_3 <- data.frame(
+    correlation_results = df_final$correlation_results_3,
+    test_retest_interval = df_final$`test-retest_interval_3`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_3 <- na.omit(cor_res_3)
+  
+  
+  cor_res_4 <- data.frame(
+    correlation_results = df_final$correlation_results_4,
+    test_retest_interval = df_final$`test-retest_interval_4`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_4 <- na.omit(cor_res_4)
+  
+  
+  cor_res_5 <- data.frame(
+    correlation_results = df_final$correlation_results_5,
+    test_retest_interval = df_final$`test-retest_interval_5`,
+    health_sub = df_final$health_sub_1
+  )
+  
+  cor_res_5 <- na.omit(cor_res_5)
+  
+  ##combine the correlations results of 1-1.8
+  
+  cor_res <- rbind(cor_res_1, cor_res_1.1, cor_res_1.2, cor_res_1.3, cor_res_1.4, cor_res_1.5, cor_res_1.6, cor_res_1.7, cor_res_1.8, cor_res_2, cor_res_3, cor_res_4, cor_res_5)
+  
+  
+  #plot correlation with time interval
+  ggplot(cor_res, aes(x = test_retest_interval, y = correlation_results)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue") + # Add correlation line
+    annotate("text", x = 400, y = 0.75, 
+             label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+             color = "blue", size = 4) +  # Add correlation coefficient annotation
+    labs(x = "Correlation Interval", y = "Correlation Results") +
+    xlim(0, 800) +
+    ylim(0, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))  # Set background color to white and axis lines to black
+  
+  
+  
+  
+  ggplot(cor_res, aes(x = test_retest_interval, y = correlation_results, group = health_sub, color = health_sub)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE) + # Add correlation lines
+    labs(x = "Correlation Interval", y = "Correlation Results", color = "Health Sub") +
+    xlim(0, 800) +
+    ylim(-1, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))  # Set background color to white and axis lines to black
+  
+  
+  
+  ####correlate only the results in the category of cancer
+  
+  # Filter the data for the "cancer" category
+  cancer_data <- cor_res %>%
+    filter(health_sub == "cancer")
+  
+  # Calculate correlation coefficient for the filtered data
+  correlation_coefficient <- cor(cancer_data$correlation_results, cancer_data$test_retest_interval)
+  
+  # Plot with filtered data and annotation for correlation coefficient
+  ggplot(cancer_data, aes(x = test_retest_interval, y = correlation_results)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue") +
+    annotate("text", x = 300, y = 0.75, 
+             label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+             color = "blue", size = 4) +
+    labs(x = "Correlation Interval", y = "Correlation Results") +
+    xlim(0, 400) +
+    ylim(0, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))
+  
+  
+  
+  # Filter the data for the "virus" category
+  virus_data <- cor_res %>%
+    filter(health_sub == "virus")
+  
+  # Calculate correlation coefficient for the filtered data
+  correlation_coefficient <- cor(virus_data$correlation_results, virus_data$test_retest_interval)
+  
+  # Plot with filtered data and annotation for correlation coefficient
+  ggplot(virus_data, aes(x = test_retest_interval, y = correlation_results)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue") +
+    annotate("text", x = 400, y = 0.75, 
+             label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+             color = "blue", size = 4) +
+    labs(x = "Correlation Interval", y = "Correlation Results") +
+    xlim(0, 750) +
+    ylim(0, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))
+  
+  
+  
+  
+  # Filter the data for the "drug" category
+  drug_data <- cor_res %>%
+    filter(health_sub == "drug")
+  
+  # Calculate correlation coefficient for the filtered data
+  correlation_coefficient <- cor(drug_data$correlation_results, drug_data$test_retest_interval)
+  
+  # Plot with filtered data and annotation for correlation coefficient
+  ggplot(drug_data, aes(x = test_retest_interval, y = correlation_results)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue") +
+    annotate("text", x = 100, y = 0.75, 
+             label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+             color = "blue", size = 4) +
+    labs(x = "Correlation Interval", y = "Correlation Results") +
+    xlim(0, 200) +
+    ylim(0, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))
+  
+  
+  
+  # Filter the data for the "mental health" category
+  mental_health_data <- cor_res %>%
+    filter(health_sub == "mental health")
+  
+  # Calculate correlation coefficient for the filtered data
+  correlation_coefficient <- cor(mental_health_data$correlation_results, mental_health_data$test_retest_interval)
+  
+  # Plot with filtered data and annotation for correlation coefficient
+  ggplot(mental_health_data, aes(x = test_retest_interval, y = correlation_results)) +
+    geom_point() +
+    geom_smooth(method = "lm", se = FALSE, color = "blue") +
+    annotate("text", x = 25, y = 0.75, 
+             label = paste("Correlation coefficient:", round(correlation_coefficient, 2)), 
+             color = "blue", size = 4) +
+    labs(x = "Correlation Interval", y = "Correlation Results") +
+    xlim(14, 30) +
+    ylim(0, 1) +
+    theme(panel.background = element_rect(fill = "white"),
+          panel.grid.major = element_blank(),
+          panel.grid.minor = element_blank(),
+          axis.line = element_line(color = "black"))
+  
+  
 
 
 
