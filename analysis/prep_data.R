@@ -1,11 +1,12 @@
-# Description -------------------------------------------------------------
+# DESCRIPTION -------------------------------------------------------------
+
 
 # In this script we preprocess the extracted data.
 
 # Author(s): Amanda Holzer(1), Arzie Bajrami(1), Rui Mata(1)
 # (1)Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
 
-#####Prep ------------------
+# PACKAGES ---------------------------------------------------------------
 #load packages 
 #install.packages("dplyr")
 #install.packages("here")
@@ -15,23 +16,21 @@ library(here)
 library(readr)
 library(tidyverse)
 
-
+# PATH ---------------------------------------------------------------
 #set working directory
 setwd(here())
 getwd()
 
-
-#####import data set-----------------
-#import data set
+# DATA ---------------------------------------------------------------
+##import data set-----
 df <- read_csv("data/raw.csv")
-df <- read_csv("C:/Users/holze/Documents/Temporal stability/temp_riskperception/data/raw.csv")
 
-#####rename column names ----------------------
+##rename column names-----
 #look at variable names
 names(df)
 
 #create name list with the old and new names
-name_file <- read_csv("analysis/variable_name_list.csv")
+name_file <- read_csv("data/variable_name_list.csv")
 
 #create column new/old names list
 numbers = 1:15
@@ -81,9 +80,9 @@ df_rename <- df_rename %>%
 names(df_rename)
 
 
-####edit columns ------------------ 
-
-# Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name, study id and covidence created title
+##edit columns-----
+##remove columns
+#Identify column indices to be removed: to be deleted, every variable form _6 to _15, covidence number, reviewer name, study id and covidence created title
 columns_to_remove <- c(grep("_[6-9]|_1[0-5]$", names(df_rename)), 
                        grep("^SE_age_[1-9]|^SE_age_1[0-5]$", names(df_rename)),
                        grep("^intervention_interval_[1-9]|^intervention_interval_[0-5]$", names(df_rename)),
@@ -93,19 +92,25 @@ columns_to_remove <- c(grep("_[6-9]|_1[0-5]$", names(df_rename)),
                        which(names(df_rename) %in% c("to_be_deleted_1", "to_be_deleted_2",
                                                      "to_be_deleted_3", "covidence_number",
                                                      "reviewer_name", "study_id", "title")))
-##not sure if we should remove intevention_duration_intervention_interval, exposure_duration, exposure_interval???????????
 
-# Remove the identified columns
+#Remove the identified columns
 df_edit <- df_rename[, -columns_to_remove]
 
+#remove column comparison_significant
+columns_to_remove_cs <- c("comparison_significant_1", "comparison_significant_2", "comparison_significant_3", "comparison_significant_4", "comparison_significant_5")
+
+# Remove specified columns
+df_edit <- df_edit[, !(names(df_edit) %in% columns_to_remove_cs), drop = FALSE]
 
 #add missing values in "author", "title", "publication_year"
 df_edit [5, 1] <- "Malnar"
 df_edit [159, 2] <- "Burnout among hospital staff during the COVID-19 pandemic: Longitudinal results from the international Cope-Corona survey study"
 df_edit [119, 3] <- 2021
 
-###aim of study was missing for the following papers. This was originally extracted but not selected in consensus.
-### add it in df_edit
+#add aim of study
+#aim of study was missing for the following papers. This was originally extracted but not selected in consensus.
+
+#add it in df_edit
 #30Yarahmandi: This study aimed to develop and validate Health Care Workers’ Concerns in Infectious Outbreaks Scale (HCWCIOS)
 df_edit [30, 4] <- "This study aimed to develop and validate Health Care Workers’ Concerns in Infectious Outbreaks Scale (HCWCIOS)"
 
@@ -125,7 +130,7 @@ df_edit <- df_edit %>%
   mutate(across(where(is.character) & !matches(c("author", "title")), tolower))
 
 
-#add design
+##add design
 df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "230"] <- "serial-cross sectional"
 
 df_edit$study_design[is.na(df_edit$study_design) & df$`Covidence #` == "534"] <- "longitudinal"
@@ -276,19 +281,16 @@ df_edit$temporal_analysis_5 <- ifelse(df_edit$temporal_analysis_5 == "yes", 1, 0
 df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes)\\b", df_edit$domain, ignore.case = TRUE))
 
 
-######data quality---------------------------
-###y#spellings, right values
-
-##prop_female
+# DATA QUALITY ---------------------------------------------------------------
+##prop_females-----
 columns_to_check <- c("prop_female_1", "prop_female_2", "prop_female_3", "prop_female_4", "prop_female_5")
 
 out_of_range <- apply(df_edit[, columns_to_check], 2, function(x) any(x < 0 | x > 1))
 
 cat(ifelse(any(out_of_range), paste("Columns", names(out_of_range[out_of_range]), "have values outside [0, 1]"), "No columns with values outside [0, 1]"), "\n")
 
-#no values over 0 and 1 in prop_female
 
-##risk
+##risk-----
 columns_to_check_risk <- c("risk_1", "risk_2", "risk_3", "risk_4", "risk_5")
 
 unique_spellings <- lapply(df_edit[, columns_to_check_risk], unique)
@@ -304,9 +306,7 @@ for (i in seq_along(unique_spellings)) {
 #Unique spellings in risk_4 : NA, risk
 #Unique spellings in risk_5 : NA, worry
 
-#seems to be alright 
-
-##country
+##country-----
 columns_to_check_country <- c("country_1", "country_2", "country_3", "country_4", "country_5")
 
 unique_countries <- lapply(df_edit[, columns_to_check_country], unique)
@@ -330,22 +330,7 @@ df_edit <- df_edit %>%
 
 df_edit$country_1[52] <- NA
 
-###
-#columns_to_check_country <- c("country_1", "country_2", "country_3", "country_4", "country_5")
-
-#unique_countries <- unique(unlist(df_edit[, columns_to_check_country]))
-
-# Display unique values
-#cat("Unique values in columns", paste(columns_to_check_country, collapse = ", "), ":", toString(unique_countries), "\n")
-
-
-#remove column comparison_significant 
-columns_to_remove_cs <- c("comparison_significant_1", "comparison_significant_2", "comparison_significant_3", "comparison_significant_4", "comparison_significant_5")
-
-# Remove specified columns
-df_edit <- df_edit[, !(names(df_edit) %in% columns_to_remove_cs), drop = FALSE]
-
-##study design 
+##study design-----
 # Display unique values in the "study_design" variable
 unique_study_design <- unique(df_edit$study_design)
 cat("Unique values in 'study_design':", toString(unique_study_design), "\n")
@@ -353,7 +338,7 @@ cat("Unique values in 'study_design':", toString(unique_study_design), "\n")
 df_edit <- df_edit %>%
   mutate_at(vars(study_design), ~ ifelse(. %in% c("serial-cross sectional", "serial cross-sectional"), "serial cross-sectional", .))
 
-##measured
+##measured-----
 # Specify the columns to check
 columns_to_check_measured <- c("measured_1", "measured_2", "measured_3", "measured_4", "measured_5")
 
@@ -368,7 +353,7 @@ df_edit[, columns_to_check_measured] <- lapply(df_edit[, columns_to_check_measur
 
 #every value is now single item, scale or NA with the exeption of one value: audiotaped, hypothetical stories
 
-##study
+##study-----
 
 # Specify the columns to check
 columns_to_check_study <- c("study_1", "study_2", "study_3", "study_4", "study_5")
@@ -379,8 +364,7 @@ for (column in columns_to_check_study) {
   cat("Unique values in", column, ":", toString(unique_values), "\n")
 }
 
-
-##how_analyzed
+##how_analyzed-----
 
 # Specify the columns to check
 columns_to_check_how_analyzed <- c("how_analyzed_1", "how_analyzed_2", "how_analyzed_3", "how_analyzed_4", "how_analyzed_5")
@@ -390,7 +374,6 @@ for (column in columns_to_check_how_analyzed) {
   unique_values <- unique(df_edit[[column]])
   cat("Unique values in", column, ":", toString(unique_values), "\n")
 }
-
 
 #mean difference
 df_edit <- df_edit %>%
@@ -418,7 +401,7 @@ unique_values <- unique(df_edit$`test-retest_interval_1`)
 
 cat("Unique values in 'test-retest_interval_1':", toString(unique_values), "\n")
 
-##type_participant 
+##type_participant-----
 # List of column names
 type_participants_columns <- c("type_participants_1", "type_participants_2", "type_participants_3", "type_participants_4", "type_participants_5")
 
@@ -433,7 +416,7 @@ df_edit <- df_edit %>%
 
 df_edit$type_participants_1[235] <- "laypeople"
 
-#age_category
+##age_category-----
 # List of column names
 age_category_columns <- c("age_category_1", "age_category_2", "age_category_3", "age_category_4", "age_category_5")
 
@@ -451,7 +434,7 @@ df_edit <- df_edit %>%
                             ifelse(. == "adolescents and young adults", "young adults", .))))
 
 
-####change interval columns--------------------
+##change interval columns-----
 
 #weird values
 df_edit$"test-retest_interval_1"[1] <- NA  
@@ -530,9 +513,8 @@ df_edit <- df_edit %>%
 # }
 
 
-
-
-##### add the new domains health, finance, nature, crime and nuclear
+##domains-----
+#add the new domains health, finance, nature, crime and nuclear
 
 #create a new column finance based on conditions in domain
 df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
@@ -546,11 +528,41 @@ df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism
 #create a new column nuclear based on conditions in domain
 df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic,)\\b", df_edit$domain, ignore.case = TRUE))
 
+# Replace 'domain' with the actual column name in your data frame
+unique_values <- unique(df_edit$domain)
 
+# Print or use the unique values as needed
+print(unique_values)
+
+
+values_with_other <- df_edit$domain[grep("other", df_edit$domain, ignore.case = TRUE)]
+
+# Print or inspect the values
+print(values_with_other)
+
+df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action)\\b", df_edit$domain, ignore.case = TRUE))
+
+# Create a new column 'health' based on conditions in 'domain'
+df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological|safety and hazard recognition|risk communication and decision-making during emergencies |validation)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column finance based on conditions in domain
+df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nature based on conditions in domain
+df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column crime based on conditions in domain
+df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|assault)\\b", df_edit$domain, ignore.case = TRUE))
+
+#create a new column nuclear based on conditions in domain
+df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic|hazardous waste site)\\b", df_edit$domain, ignore.case = TRUE))
+
+df_edit$political <- as.integer(grepl("trust in politics|political", df_edit$domain, ignore.case = TRUE))
+
+##edit results-----
 # Create a new dataframe for better editing 
 new_df <- data.frame(
-  test_retest_results_1 = df_edit$`test-retest_result_1`
-)
+  test_retest_results_1 = df_edit$`test-retest_result_1`)
 
 new_df$ICC_results_1 <- NA
 new_df$correlation_results_1 <- NA
@@ -572,7 +584,6 @@ new_df$ICC_results_1[!is.na(new_df$correlation_results_1)] <- NA
 
 # replace
 new_df$ICC_results_1[216] <- 0.42
-
 
 #Clean up the column ICC_results_1 and column ICC_results_1.1
 new_df$ICC_results_1.1[17] <- "0.82"
@@ -682,9 +693,6 @@ new_df$correlation_results_1[186] <- "0.83"
 new_df$correlation_results_1[238] <- "0.91"
 
 
-
-
-
 #add the dataframe back
 new_df_subset <- new_df[, !grepl("test-retest", names(new_df))]
 
@@ -706,7 +714,6 @@ new_dataframe$correlation_results_2[215] <- "-0.2666"
 new_dataframe$correlation_results_3[215] <- "-0.6188"
 new_dataframe$correlation_results_2[23] <- NA
 
-
 # Remove all non-numeric characters from the entire dataframe
 new_dataframe[] <- lapply(new_dataframe, function(x) gsub("[^0-9.,-]+", "", x))
 
@@ -716,6 +723,8 @@ df_edit <- cbind(df_edit, new_dataframe[, c("correlation_results_2", "correlatio
 df_edit$correlation_results_1[89] <- "0.78"
 df_edit$ICC_results_1[89] <- "0.83"
 
+
+##sample size-----
 #add all the missing sample sizes. 
 df_edit$sample_size_1[24] <- 359
 df_edit$sample_size_1[28] <- 138
@@ -725,6 +734,7 @@ df_edit$sample_size_1[170] <- 686
 df_edit$sample_size_1[177] <- 2705
 df_edit$sample_size_1[235] <- 159
 
+##check na counts-----
 ##check if all the sample sizes are there for relevant cases
 # Count NA values in sample_size_1 to sample_size_5 when temporal_analysis_1 is 1
 na_counts_temporal_1 <- sum(df_edit$temporal_analysis_1 == 1 & is.na(df_edit$sample_size_1))
@@ -740,62 +750,8 @@ print(na_counts_temporal_3)
 print(na_counts_temporal_4)
 print(na_counts_temporal_5)
 
-##DOMAINS
-# Replace 'domain' with the actual column name in your data frame
-unique_values <- unique(df_edit$domain)
 
-# Print or use the unique values as needed
-print(unique_values)
-
-
-values_with_other <- df_edit$domain[grep("other", df_edit$domain, ignore.case = TRUE)]
-
-# Print or inspect the values
-print(values_with_other)
-
-#edit domains 
-#df_edit <- df_edit %>%
-#  mutate(
-#    health = ifelse(grepl("road safety intervention|affect/cognition|technological (cell site deployment)|risk communication and decision-making during emergencies", tolower(domain)), 1, 0),
-#    nature = ifelse( grepl("climate change|forests", tolower(domain)),1, 0),
-#    crime = ifelse( grepl("speeding|sexual assault", tolower(domain)),1, 0),
-#    nuclear = ifelse(grepl("hazardous waste site", tolower(domain)),1, 0))
-
-#DOMAIN: SOCIAL
-#df_edit <- df_edit %>%
-#  mutate(
-#    social = ifelse(grepl("social anxiety|occupational|social media and online privacy #attitudes|social risk and prosocial tendencies|aggressive intergroup action", tolower(domain)),1,0))
-
-
-#DOMAIN: POLITICAL AND VALIDATION
-#df_edit <- df_edit %>%
-#  mutate(
-#    political = ifelse(
-#      grepl("trust in politics|political", tolower(domain)),1,0))
-
-
-df_edit$social <- as.integer(grepl("\\b(social anxiety|occupational|social media and online privacy attitudes|social risk and prosocial tendencies|aggressive intergroup action)\\b", df_edit$domain, ignore.case = TRUE))
-
-# Create a new column 'health' based on conditions in 'domain'
-df_edit$health <- as.integer(grepl("\\b(health|cancer|drugs|cigarettes|road safety intervention|affect/cognition|technological|safety and hazard recognition|risk communication and decision-making during emergencies |validation)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column finance based on conditions in domain
-df_edit$finance <- as.integer(grepl("\\b(financial|financial|workers|deployment,)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column nature based on conditions in domain
-df_edit$nature <- as.integer(grepl("\\b(natural|pollution|floods|climate|air|pollution|cyclones| forest| water|environmental|agriculture|insect|forests|water,|wildfires|earthquakes|environment,)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column crime based on conditions in domain
-df_edit$crime <- as.integer(grepl("\\b(crime|speeding|disturbance|road|terrorism|assault)\\b", df_edit$domain, ignore.case = TRUE))
-
-#create a new column nuclear based on conditions in domain
-df_edit$nuclear <- as.integer(grepl("\\b(radiation|radiation,|pollution|power|nuclear|electromagnetic|hazardous waste site)\\b", df_edit$domain, ignore.case = TRUE))
-
-df_edit$political <- as.integer(grepl("trust in politics|political", df_edit$domain, ignore.case = TRUE))
-
-
-
-####characteristics_sample:
+##characteristics_sample-----
 columns_to_check <- c("characteristics_sample_1", "characteristics_sample_2", "characteristics_sample_3", "characteristics_sample_4", "characteristics_sample_5")
 
 # Create a list to store unique values for each column
@@ -807,7 +763,6 @@ for (i in seq_along(columns_to_check)) {
   unique_values <- unique_values_list[[i]]
   cat("Unique values in", column_name, ":", toString(unique_values), "\n")
 }
-
 
 categorize_samples <- function(characteristics_sample) {
   case_when(
@@ -833,7 +788,7 @@ df_edit <- df_edit %>%
     vars(sample_category_1:sample_category_5),
     funs(tolower(.)))
 
-##UNITS ASSESSED
+##units assessed-----
 columns_to_check <- c("units_assessed_1", "units_assessed_2", "units_assessed_3", "units_assessed_4", "units_assessed_5")
 
 # Create a list to store unique values for each column
@@ -860,7 +815,6 @@ df_edit <- df_edit %>%
     funs(ifelse(
       grepl("0 \\(no risk\\) to 100 \\(very high risk\\)|0% -100%|1 in 100 (1%) to inevitable (100%) --> then converted into risk categories| total scores range from 6 to 24 where a higher score indicates higher levels of\ncancer’s worry| 0 to 100%|0-100%|0% - 100%|percentage scale|0% to 100% visual scale|0%-100%|1 in 100 \\(1%\\) to inevitable \\(100%\\)|10 cm visual analogue scale \\(vas\\)|ranging from ‘not at all likely|10-point visual analog scale|0 \\(no concern\\) to 100 \\(very high concern\\)", ., ignore.case = TRUE),
       "range",.)))
-
 
 #fix stubborn cases
 df_edit$units_assessed_2[3] <- "range"
@@ -889,7 +843,8 @@ df_edit$units_assessed_1[35] <- "likert scale"
 df_edit$units_assessed_1[132] <- "likert scale"
 df_edit$units_assessed_1[113] <- "likert scale"
 
-#make one final dataset for the analysis 
+##final df-----
+#create one final dataset for the analysis 
 df_final <- df_edit[c(
   "author", "paper_title", "publication_year", "data_availability",
   "study_design", "risk_1", "risk_2", "risk_3", "risk_4", "risk_5",
@@ -933,9 +888,8 @@ df_final[columns_to_check] <- lapply(df_final[columns_to_check], as.numeric)
 # Find rows where all specified columns have a value of 0
 rows_with_all_zeros <- df_final[apply(df_final[columns_to_check] == 0, 1, all), ]
 
-
-
-#######subdomains 
+##subdomains-----
+#add subdomains for each paper in the final df
 df_final$health_sub_1 <- NA
 df_final$health_sub_2 <- NA
 df_final$health_sub_1[1] <- "cancer"
@@ -1188,7 +1142,8 @@ df_final$health_sub_1[240] <-"pregnancy"
 df_final$health_sub_1[241] <-"dementia"
 
 
-##add codes based on abstract_codes------------------
+###merge abstract file with final file
+#add codes based on abstract_codes to match
 df_final$codes <- NA
 df_final$codes[1] <- "cua"
 df_final$codes[2] <- "yga"
@@ -1432,10 +1387,11 @@ df_final$codes[239] <-"zbw"
 df_final$codes[240] <-"xtm"
 df_final$codes[241] <-"zkr"
 
-#merge
+#merge dataframes
 final <- inner_join(abstracts, df_final, by = "codes")
 
 final <- final %>%
 select(-codes, -Title, -Authors, -`Published Year`)
 
+# COMPLETE DATA ---------------------------------------------------------------
 write.csv(final, file = "data/final.csv")
