@@ -70,7 +70,7 @@ print(percentage_distribution)
 ## Measurement type
 #Create table
 table_measured <- table(df_final$measured_1)
-prop.table(table_measured_1) * 100 #percentage of measurement type
+prop.table(table_measured) * 100 #percentage of measurement type
 ```
 
 ```{r}
