@@ -121,9 +121,9 @@ create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
   
   # Create a long-format data frame for ggplot
-  df_long <- df %>%
-    gather(key = "variable", value = "value", columns_of_interest) %>%
-    filter(value == 1)  # Filter only rows where the value is 1
+ df_long <- df %>%
+  tidyr::gather(key = "variable", value = "value", columns_of_interest) %>%
+  filter(value == 1)
   
   # Arrange levels of 'variable' by count in ascending order
   df_long$variable <- factor(df_long$variable, levels = names(sort(table(df_long$variable), decreasing = FALSE)))

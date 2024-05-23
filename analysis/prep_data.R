@@ -1394,3 +1394,8 @@ select(-codes, -Title, -Authors, -`Published Year`)
 
 # COMPLETE DATA ---------------------------------------------------------------
 write.csv(final, file = "data/final.csv")
+
+
+final %>%
+filter(author == "Gordon") %>% select(paper_title, intervention_yesno_1:intervention_yesno_5, exposure_yesno_1:exposure_yesno_5)
+
