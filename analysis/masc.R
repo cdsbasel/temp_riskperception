@@ -35,9 +35,6 @@ cmdstanr::install_cmdstan()
 library(cmdstanr)
 library(readxl)
 
-
-color_scheme_set("teal")
-
 # PATH ---------------------------------------------------------------
 #set working directory
 setwd(here())
@@ -63,7 +60,7 @@ selected_columns <- select(df_prep, x1, author, paper_title, study_design, risk_
                            prop_female_1:prop_female_5, mean_age_1:mean_age_5, sd_age_1:sd_age_5)
 
 
-# Attempt to pivot the selected columns
+# Pivot the selected columns
 df_pivoted <- selected_columns %>%
   mutate_all(as.character()) %>%
   mutate_if(is.logical, as.character) %>%
@@ -102,7 +99,7 @@ df_interval <- df_filtered %>%
   select(-author, -paper_title, -study_design)
 
 
-#add correlation interval
+# Add correlation interval
 cor_num <- gsub("correlation_results_", "", df_cor_results$cor_name)
 
 modified_interval_names <- paste0("test_retest_interval_", cor_num)
@@ -117,14 +114,29 @@ df_cor$cor_val <- as.numeric(df_cor$cor_val)
 
 #write.xlsx(df_cor, file = "data/cor.xlsx")
 
-####
-#The rest of the data such as missing interval, sample size, age, female percentage and domain were manually entered from the raw data in excel. 
+####The rest of the data such as risk formulation, interval, sample size, age, female percentage, domain, subdomain, multi/single item and Intervention/exposure were manually entered from the raw data in excel. 
 ####
 
-#import data
+## IMPORT CORRELATION FILE
 df <- read_excel("data/cor_final.xlsx")
 
-#manipulate data
+# MEAN IMPUTATION FOR MISSING DATA
+# Age
+mean_age <- mean(df$age, na.rm=T)
+mean_age
+i_NA_age <- which(is.na(df$age) == TRUE)
+df$age[i_NA_age] <- mean_age
+mean_age == mean(df$age)
+
+# Female percentage 
+mean_female <- mean(df$female, na.rm=T)
+mean_female
+i_NA_female <- which(is.na(df$female) == TRUE)
+df$female[i_NA_female] <- mean_female
+mean_female == mean(df$female)
+
+
+# MANIPULATE DATA
 mean(df$female, na.rm=T)
 mean(df$age, na.rm=T)
 df$interval_val <- df$interval_val/365
@@ -138,7 +150,120 @@ df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val),
 df <- escalc(measure = "COR", ri=cor_val, ni=n, data=df)
 df$sei <- sqrt(df$vi)
 
-# 1 MODEL FITTING WITH PREDICTORS AGE, AGE2, GENDER, AUTHOR---------------------------------------------------------------
+# MODEL 1 FITTING WITH CORRELATION, INTERVAL AND SIZE--------------------------------------------------------
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+formula_m1 <- bf(
+  cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + n,
+  logitchange ~ 1 + n,
+  logitstabch ~ 1 +n,
+  nl = TRUE
+)
+
+# Define the weakly informative priors
+priors <-
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc_m1 <- brm(
+  formula = formula_m1,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  # backend = "cmdstanr",
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+
+# MODEL 1 EVAL: MCMC DIAGNOSTICS -------------------------------------------------------
+
+# model summary 
+fit_masc_m1
+
+#plot conditional effects
+plot(conditional_effects(fit_masc_m1), points=T)
+
+# trace plots & param. estimates
+plot(fit_masc_m1, N = 5, ask = TRUE)
+
+
+
+# MODEL 1 EVAL: PP CHECKS -------------------------------------------------------
+summary(fit_masc_m1)
+
+# simulations vs. obs: Overall
+pp_check(fit_masc_m1,
+         type ="dens_overlay",
+         ndraws = 100)
+
+
+pp_check(fit_masc_m1,
+         type ="stat",
+         stat = "mean",
+         ndraws = 1000,
+         binwidth = .001)
+
+pp_check(fit_masc_m1,
+         type ="stat",
+         stat = "sd",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m1,
+         type ="stat",
+         stat = "median",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m1,
+         type ="stat",
+         stat = "mad",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m1,
+         type ="stat_2d")
+
+
+pp_check(fit_masc_m1,
+         type ="scatter_avg")
+
+
+# MODEL 1 EVAL: LOO --------------------------------------------------------
+
+# loo & pareto K
+model_loo <- loo(fit_masc_m1, save_psis = TRUE, cores = 2)
+plot(model_loo, diagnostic = "k")
+plot(model_loo, diagnostic = "n_eff")
+
+# loo pit
+w <- weights(model_loo$psis_object)
+ppc_loo_pit_overlay(y = fit_masc_m1$data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m1), 
+                    lw = w)
+ppc_loo_pit_qq(y = fit_masc_m1$data$cor_val, 
+               yrep = posterior_predict(fit_masc_m1), 
+               lw = w)
+
+
+
+# MODEL 2 FITTING WITH DEMOGRAPHICS: AGE, AGE2, GENDER---------------------------------------------------------------
 family <- brmsfamily(
   family = "student",
   link = "identity"
@@ -146,17 +271,16 @@ family <- brmsfamily(
 
 # Define the formula
 
-formula_age_female_author <- bf(
+formula_m2 <- bf(
   cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + age_dec_c + age_dec_c2 + female_c + (1|author),
-  logitchange ~ 1 + age_dec_c + age_dec_c2 + female_c+ (1|author),
-  logitstabch ~ 1 + age_dec_c+ age_dec_c2  + female_c+ (1|author),
+  logitrel ~ 1 + age_dec_c + age_dec_c2  + female_c,
+  logitchange ~ 1 + age_dec_c + age_dec_c2 + female_c,
+  logitstabch ~ 1 + age_dec_c+ age_dec_c2  + female_c,
   nl = TRUE
 )
-
 
 
 # Define the weakly informative priors
@@ -167,8 +291,8 @@ priors <-
   prior(cauchy(0,1), class = "sigma")
 
 # Fit the model
-fit_masc_age_female_author <- brm(
-  formula = formula_age_female_author,
+fit_masc_m2 <- brm(
+  formula = formula_m2,
   prior = priors,
   family = family,
   data = df,
@@ -182,78 +306,77 @@ fit_masc_age_female_author <- brm(
 )
 
 
-
-# 1 MODEL EVAL: MCMC DIAGNOSTICS  WITH PREDICTORS AGE, AGE2, GENDER, AUTHOR --------------------------------------------------------
+# MODEL 2 EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
 # model summary 
-fit_masc_age_female_author
+fit_masc_m2
 
 #plot conditional effects
-plot(conditional_effects(fit_masc_age_female_author), points=T)
+plot(conditional_effects(fit_masc_m2), points=T)
 
 # trace plots & param. estimates
-plot(fit_masc_age_female_author, N = 5, ask = TRUE)
+plot(fit_masc_m2 , N = 5, ask = TRUE)
 
 
-
-# 1 MODEL EVAL: PP CHECKS  WITH PREDICTORS AGE, AGE2, GENDER, AUTHOR--------------------------------------------------------
-summary(fit_masc_age_female_author)
+# MODEL 2 EVAL: PP CHECKS --------------------------------------------------------
+summary(fit_masc_m2 )           
 
 # simulations vs. obs: Overall
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="dens_overlay",
          ndraws = 100)
 
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="stat",
          stat = "mean",
          ndraws = 1000,
          binwidth = .001)
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="stat",
          stat = "sd",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="stat",
          stat = "median",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="stat",
          stat = "mad",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="stat_2d")
 
 
-pp_check(fit_masc_age_female_author,
+pp_check(fit_masc_m2 ,
          type ="scatter_avg")
 
 
-# 1 MODEL EVAL: LOO --------------------------------------------------------
+# MODEL 2 EVAL: LOO --------------------------------------------------------
 
 # loo & pareto K
-model_loo <- loo(fit_masc_age_female_author, save_psis = TRUE, cores = 2)
+model_loo <- loo(fit_masc_m2 , save_psis = TRUE, cores = 2)
 plot(model_loo, diagnostic = "k")
 plot(model_loo, diagnostic = "n_eff")
 
 # loo pit
 w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_age_female_author$data$cor_val, 
-                    yrep = posterior_predict(fit_masc_age_female_author), 
+ppc_loo_pit_overlay(y = fit_masc_m2 $data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m2 ), 
                     lw = w)
-ppc_loo_pit_qq(y = fit_masc_age_female_author$data$cor_val, 
-               yrep = posterior_predict(fit_masc_age_female_author), 
+ppc_loo_pit_qq(y = fit_masc_m2 $data$cor_val, 
+               yrep = posterior_predict(fit_masc_m2 ), 
                lw = w)
 
-# 2 MODEL FITTING WITH PREDICTORS AGE, AGE2, AUTHOR---------------------------------------------------------------
+
+# MODEL 3 FITTING WITH MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
 family <- brmsfamily(
   family = "student",
   link = "identity"
@@ -261,14 +384,14 @@ family <- brmsfamily(
 
 # Define the formula
 
-formula_age_author <- bf(
+formula_m3 <- bf(
   cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + age_dec_c + age_dec_c2  + (1|author),
-  logitchange ~ 1 + age_dec_c + age_dec_c2 + (1|author),
-  logitstabch ~ 1 + age_dec_c+ age_dec_c2  + (1|author),
+  logitrel ~ 1 + domain + item + event,
+  logitchange ~ 1 + domain + item + event,
+  logitstabch ~ 1 + domain + item + event,
   nl = TRUE
 )
 
@@ -282,8 +405,8 @@ priors <-
   prior(cauchy(0,1), class = "sigma")
 
 # Fit the model
-fit_masc_age_author <- brm(
-  formula = formula_age_author,
+fit_masc_m3 <- brm(
+  formula = formula_m3,
   prior = priors,
   family = family,
   data = df,
@@ -296,321 +419,82 @@ fit_masc_age_author <- brm(
   seed = 1299
 )
 
-
-
-# 2 MODEL EVAL: MCMC DIAGNOSTICS  WITH PREDICTORS AGE, AGE2, AUTHOR --------------------------------------------------------
+# MODEL 3 EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
 # model summary 
-fit_masc_age_author
+fit_masc_m3
 
 #plot conditional effects
-plot(conditional_effects(fit_masc_age_author), points=T)
+plot(conditional_effects(fit_masc_m3), points=T)
 
 # trace plots & param. estimates
-plot(fit_masc_age_author , N = 5, ask = TRUE)
+plot(fit_masc_m3 , N = 5, ask = TRUE)
 
 
-# 2 MODEL EVAL: PP CHECKS  WITH PREDICTORS AGE, AGE2, AUTHOR--------------------------------------------------------
-summary(fit_masc_age_author )           
+# MODEL 3 EVAL: PP CHECKS --------------------------------------------------------
+summary(fit_masc_m3 )
 
 # simulations vs. obs: Overall
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="dens_overlay",
          ndraws = 100)
 
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="stat",
          stat = "mean",
          ndraws = 1000,
          binwidth = .001)
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="stat",
          stat = "sd",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="stat",
          stat = "median",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="stat",
          stat = "mad",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="stat_2d")
 
 
-pp_check(fit_masc_age_author ,
+pp_check(fit_masc_m3 ,
          type ="scatter_avg")
 
 
-# 2 MODEL EVAL: LOO --------------------------------------------------------
+
+# MODEL 3 EVAL: LOO --------------------------------------------------------
 
 # loo & pareto K
-model_loo <- loo(fit_masc_age_author , save_psis = TRUE, cores = 2)
+model_loo <- loo(fit_masc_m3 , save_psis = TRUE, cores = 2)
 plot(model_loo, diagnostic = "k")
 plot(model_loo, diagnostic = "n_eff")
 
 # loo pit
 w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_age_author $data$cor_val, 
-                    yrep = posterior_predict(fit_masc_age_author ), 
+ppc_loo_pit_overlay(y = fit_masc_m3$data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m3 ), 
                     lw = w)
-ppc_loo_pit_qq(y = fit_masc_age_author $data$cor_val, 
-               yrep = posterior_predict(fit_masc_age_author ), 
+ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val, 
+               yrep = posterior_predict(fit_masc_m3 ), 
                lw = w)
 
-
-# 3 MODEL FITTING WITH PREDICTORS AUTHOR---------------------------------------------------------------
-family <- brmsfamily(
-  family = "student",
-  link = "identity"
-)
-
-# Define the formula
-
-formula_author <- bf(
-  cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
-  nlf(rel ~ inv_logit(logitrel)),
-  nlf(change ~ inv_logit(logitchange)),
-  nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + (1|author),
-  logitchange ~ 1 + (1|author),
-  logitstabch ~ 1 + (1|author),
-  nl = TRUE
-)
-
-
-
-# Define the weakly informative priors
-priors <-
-  prior(normal(0,1), nlpar="logitrel", class = "b") +
-  prior(normal(0,1), nlpar="logitchange", class = "b") +
-  prior(normal(0,1), nlpar="logitstabch", class = "b") +
-  prior(cauchy(0,1), class = "sigma")
-
-# Fit the model
-fit_masc_author <- brm(
-  formula = formula_author,
-  prior = priors,
-  family = family,
-  data = df,
-  cores = 2,
-  chains = 2,
-  iter = 6000,
-  warmup = 2000,
-  # backend = "cmdstanr",
-  control = list(max_treedepth = 10, adapt_delta = 0.95),
-  seed = 1299
-)
-
-# 3 MODEL EVAL: MCMC DIAGNOSTICS  WITH PREDICTOR AUTHOR --------------------------------------------------------
-
-# model summary 
-fit_masc_author
-
-#plot conditional effects
-plot(conditional_effects(fit_masc_author), points=T)
-
-# trace plots & param. estimates
-plot(fit_masc_author , N = 5, ask = TRUE)
-
-
-# 3 MODEL EVAL: PP CHECKS  WITH AUTHOR--------------------------------------------------------
-summary(fit_masc_author )
-
-# simulations vs. obs: Overall
-pp_check(fit_masc_author ,
-         type ="dens_overlay",
-         ndraws = 100)
-
-
-pp_check(fit_masc_author ,
-         type ="stat",
-         stat = "mean",
-         ndraws = 1000,
-         binwidth = .001)
-
-pp_check(fit_masc_author ,
-         type ="stat",
-         stat = "sd",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_author ,
-         type ="stat",
-         stat = "median",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_author ,
-         type ="stat",
-         stat = "mad",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_author ,
-         type ="stat_2d")
-
-
-pp_check(fit_masc_author ,
-         type ="scatter_avg")
-
-
-
-# MODEL EVAL: LOO --------------------------------------------------------
-
-# loo & pareto K
-model_loo <- loo(fit_masc_author , save_psis = TRUE, cores = 2)
-plot(model_loo, diagnostic = "k")
-plot(model_loo, diagnostic = "n_eff")
-
-# loo pit
-w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_author $data$cor_val, 
-                    yrep = posterior_predict(fit_masc_author ), 
-                    lw = w)
-ppc_loo_pit_qq(y = fit_masc_author $data$cor_val, 
-               yrep = posterior_predict(fit_masc_author ), 
-               lw = w)
-
-
-
-###################################
-###################################
-###################################
-# 4 MODEL FITTING WITH PREDICTORS AGE, AGE2, AUTHOR, SUBDOMAINS---------------------------------------------------------------
-  family <- brmsfamily(
-    family = "student",
-    link = "identity"
-  )
-
-# Define the formula
-
-formula_age_author_subdomains <- bf(
-  cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
-  nlf(rel ~ inv_logit(logitrel)),
-  nlf(change ~ inv_logit(logitchange)),
-  nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + age_dec_c + age_dec_c2  + (1|author) + health_subdomain,
-  logitchange ~ 1 + age_dec_c + age_dec_c2 + (1|author)+ health_subdomain,
-  logitstabch ~ 1 + age_dec_c+ age_dec_c2  + (1|author) + health_subdomain,
-  nl = TRUE
-)
-
-
-
-# Define the weakly informative priors
-priors <-
-  prior(normal(0,1), nlpar="logitrel", class = "b") +
-  prior(normal(0,1), nlpar="logitchange", class = "b") +
-  prior(normal(0,1), nlpar="logitstabch", class = "b") +
-  prior(cauchy(0,1), class = "sigma")
-
-# Fit the model
-fit_masc_age_author_subdomains <- brm(
-  formula = formula_age_author_subdomains,
-  prior = priors,
-  family = family,
-  data = df,
-  cores = 2,
-  chains = 2,
-  iter = 6000,
-  warmup = 2000,
-  # backend = "cmdstanr",
-  control = list(max_treedepth = 10, adapt_delta = 0.95),
-  seed = 1299
-)
-
-
-
-# 4 MODEL EVAL: MCMC DIAGNOSTICS  WITH PREDICTORS AGE, AGE2, AUTHOR, SUBDOMAINS --------------------------------------------------------
-
-# model summary 
-fit_masc_age_author_subdomains
-
-#plot conditional effects
-plot(conditional_effects(fit_masc_age_author_subdomains), points=T)
-
-# trace plots & param. estimates
-plot(fit_masc_age_author_subdomains , N = 5, ask = TRUE)
-
-
-# 4 MODEL EVAL: PP CHECKS  WITH PREDICTORS AGE, AGE2, AUTHOR, SUBDOMAINS --------------------------------------------------------
-summary(fit_masc_age_author_subdomains )           
-
-# simulations vs. obs: Overall
-pp_check(fit_masc_age_author_subdomains ,
-         type ="dens_overlay",
-         ndraws = 100)
-
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="stat",
-         stat = "mean",
-         ndraws = 1000,
-         binwidth = .001)
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="stat",
-         stat = "sd",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="stat",
-         stat = "median",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="stat",
-         stat = "mad",
-         ndraws = 500,
-         binwidth = .001)
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="stat_2d")
-
-
-pp_check(fit_masc_age_author_subdomains ,
-         type ="scatter_avg")
-
-
-# 4 MODEL EVAL: LOO --------------------------------------------------------
-
-# loo & pareto K
-model_loo <- loo(fit_masc_age_author_subdomains , save_psis = TRUE, cores = 2)
-plot(model_loo, diagnostic = "k")
-plot(model_loo, diagnostic = "n_eff")
-
-# loo pit
-w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_age_author_subdomains $data$cor_val, 
-                    yrep = posterior_predict(fit_masc_age_author_subdomains ), 
-                    lw = w)
-ppc_loo_pit_qq(y = fit_masc_age_author_subdomains $data$cor_val, 
-               yrep = posterior_predict(fit_masc_age_author_subdomains ), 
-               lw = w)
-
-
-
-###################################
-###################################
-###################################
 
 # MODEL EVAL: LOO- COMPARISON OF ALL MODEL ----------------------------------------------------
-loo1 <- loo(fit_masc_age_female_author)
+loo1 <- loo(fit_masc_m1)
 
-loo2 <- loo(fit_masc_age_author)
+loo2 <- loo(fit_masc_m2)
 
-loo3 <- loo(fit_masc_author)
+loo3 <- loo(fit_masc_m3)
 
 

@@ -1387,10 +1387,11 @@ df_final$codes[240] <-"xtm"
 df_final$codes[241] <-"zkr"
 
 #merge dataframes
+abstracts <- read_csv("data/abstracts.csv")
 final <- inner_join(abstracts, df_final, by = "codes")
 
 final <- final %>%
 select(-codes, -Title, -Authors, -`Published Year`)
 
 # COMPLETE DATA ---------------------------------------------------------------
-write.csv(final, file = "data/final.csv")
+#write.csv(final, file = "data/final.csv")
