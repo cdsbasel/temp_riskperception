@@ -150,6 +150,34 @@ df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val),
 df <- escalc(measure = "COR", ri=cor_val, ni=n, data=df)
 df$sei <- sqrt(df$vi)
 
+inv_logit <- function(x){plogis(x)}
+
+sum_coding <- function(x, lvls = levels(x)) {
+  # codes the first category with -1
+  nlvls <- length(lvls)
+  stopifnot(nlvls > 1)
+  cont <- diag(nlvls)[, -nlvls, drop = FALSE]
+  cont[nlvls, ] <- -1
+  cont <- cont[c(nlvls, 1:(nlvls - 1)), , drop = FALSE]
+  colnames(cont) <- lvls[-1]
+  x <- factor(x, levels = lvls)
+  contrasts(x) <- cont
+  x
+}
+
+# using sum contrast coding
+df <- df %>% mutate(health_subdomain = factor(health_subdomain),
+                    health_subdomain = relevel(health_subdomain, ref="drug"),
+                    health_subdomain = sum_coding(health_subdomain, lvls = levels(health_subdomain))) %>% 
+            mutate(event = factor(event),
+                     event = relevel(event, ref="exposure"),
+                     event = sum_coding(event, lvls = levels(event))) %>% 
+  mutate(item_c= ifelse(item=="single", -0.5, 0.5))
+
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_grid(.~ event)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ health_subdomain)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ item_c)
+
 # MODEL 1 FITTING WITH CORRELATION, INTERVAL AND SIZE--------------------------------------------------------
 family <- brmsfamily(
   family = "student",
@@ -162,9 +190,9 @@ formula_m1 <- bf(
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + n,
-  logitchange ~ 1 + n,
-  logitstabch ~ 1 +n,
+  logitrel ~ 1,
+  logitchange ~ 1,
+  logitstabch ~ 1,
   nl = TRUE
 )
 
@@ -389,9 +417,9 @@ formula_m3 <- bf(
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + domain + item + event,
-  logitchange ~ 1 + domain + item + event,
-  logitstabch ~ 1 + domain + item + event,
+  logitrel ~ 1 + health_subdomain + item_c+ event,
+  logitchange ~ 1 + health_subdomain + event,
+  logitstabch ~ 1 + health_subdomain + event,
   nl = TRUE
 )
 
@@ -426,6 +454,7 @@ fit_masc_m3
 
 #plot conditional effects
 plot(conditional_effects(fit_masc_m3), points=T)
+
 
 # trace plots & param. estimates
 plot(fit_masc_m3 , N = 5, ask = TRUE)
@@ -489,6 +518,228 @@ ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val,
                yrep = posterior_predict(fit_masc_m3 ), 
                lw = w)
 
+#PREDICTIONS TIME ---------------------------------------------------------------
+
+?predict
+
+nd <- crossing(health_subdomain= unique(df$health_subdomain),  sei = 0.1, item_c=0, event=NA, interval_val=seq(0,5, by = .25))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  # geom_line(data = epred_draws_agg, 
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~health_subdomain,  nrow = 4) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 8.5, color = "grey20"),
+        text = element_text(size = 9, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 9, color = "grey20"),
+        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,5))
+
+
+#PREDICTIONS PARAMETERS ---------------------------------------------------------------
+
+# BY DOMAINS
+
+pred_df_domain <- NULL
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(health_subdomain= unique(df$health_subdomain),  
+                 sei = 0.1,
+                 item_c=0, 
+                 event=NA, 
+                 interval_val=0)
+  
+  
+  
+  
+  fit_nlpar_domain <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA)    
+  
+
+ 
+  fit_nlpar_domain <- fit_nlpar_domain %>%
+    group_by(health_subdomain) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "domain",
+           x = health_subdomain)%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  pred_df <- fit_nlpar_domain
+  
+
+  pred_df_domain <- bind_rows(pred_df, pred_df_domain) 
+}
+
+
+
+pred_df_domain <- pred_df_domain %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+
+
+
+# BY ITEM
+
+
+pred_df_item <- NULL
+
+  
+  
+  for (curr_nlpar in c("stabch","rel","change")) {
+    
+    
+    nd <- crossing(health_subdomain= NA,  
+                   sei = 0.1,
+                   item_c= c(-0.5,0.5), 
+                   event=NA, 
+                   interval_val=0)
+    
+    
+    fit_nlpar_item <- nd %>% 
+      add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+    
+
+  
+    
+    
+    fit_nlpar_item <- fit_nlpar_item %>%
+      group_by(item_c) %>% 
+      mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+      pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+      mutate(nlpar = curr_nlpar,
+             estimate = .epred,
+             categ = "item",
+             x = case_when(item_c == -.5 ~ "single",
+                           item_c == .5 ~ "multiple"))%>% 
+      select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+    
+    
+    
+    pred_df <- fit_nlpar_item
+    
+    
+    pred_df_item <- bind_rows(pred_df, pred_df_item) 
+  }
+  
+
+pred_df_item <- pred_df_item %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+# BY EVENT
+
+
+pred_df_event <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(health_subdomain= NA,  
+                 sei = 0.1,
+                 item_c= 0, 
+                 event=unique(df$event), 
+                 interval_val=0)
+  
+  
+  fit_nlpar_event <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_event <- fit_nlpar_event %>%
+    group_by(event) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "event",
+           x = event)%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_event
+  
+  
+  pred_df_event <- bind_rows(pred_df, pred_df_event) 
+}
+
+pred_df_event <- pred_df_event %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+
+pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event)
+
+
+
+
 
 # MODEL EVAL: LOO- COMPARISON OF ALL MODEL ----------------------------------------------------
 loo1 <- loo(fit_masc_m1)
@@ -497,4 +748,4 @@ loo2 <- loo(fit_masc_m2)
 
 loo3 <- loo(fit_masc_m3)
 
-
+loo_compare(loo1, loo2, loo3)
