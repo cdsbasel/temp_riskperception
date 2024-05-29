@@ -19,6 +19,7 @@ install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOpt
 #install.packages("tidyverse")
 #install.packages("here")
 #install.packages("readxl")
+#install.packages("ggtext")
 
 library(tidyverse)
 library(brms)
@@ -34,6 +35,10 @@ library(metafor)
 cmdstanr::install_cmdstan()
 library(cmdstanr)
 library(readxl)
+library(ggtext)
+
+
+inv_logit <- function(x){plogis(x)}
 
 # PATH ---------------------------------------------------------------
 #set working directory
@@ -142,6 +147,9 @@ mean(df$age, na.rm=T)
 df$interval_val <- df$interval_val/365
 plot(df$interval_val, df$cor_val)
 
+
+# Centering age and female percentage
+
 df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val), 
                     age_dec_c = (age-40)/10,
                     age_dec_c2 = age_dec_c^2,
@@ -150,7 +158,22 @@ df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val),
 df <- escalc(measure = "COR", ri=cor_val, ni=n, data=df)
 df$sei <- sqrt(df$vi)
 
-inv_logit <- function(x){plogis(x)}
+
+# Creating domain groups
+# health and other (social, political, crime, nature, finance)
+df <- df %>% mutate(domain = 
+                      case_when(domain %in% c("health") ~ "health",
+                                !domain %in% c("health") ~ "other"))
+
+# Creating event groups
+# none and event (intervention or exposure)
+df <- df %>% mutate(event = 
+                      case_when(event %in% c("none") ~ "none",
+                                !event %in% c("none") ~ "event"))
+
+
+
+# using sum contrast coding
 
 sum_coding <- function(x, lvls = levels(x)) {
   # codes the first category with -1
@@ -165,14 +188,25 @@ sum_coding <- function(x, lvls = levels(x)) {
   x
 }
 
-# using sum contrast coding
-df <- df %>% mutate(health_subdomain = factor(health_subdomain),
-                    health_subdomain = relevel(health_subdomain, ref="drug"),
-                    health_subdomain = sum_coding(health_subdomain, lvls = levels(health_subdomain))) %>% 
+df <- df %>% mutate(domain = factor(domain),
+                    domain = relevel(domain, ref="health"),
+                    domain = sum_coding(domain, lvls = levels(domain))) %>% 
             mutate(event = factor(event),
-                     event = relevel(event, ref="exposure"),
+                     event = relevel(event, ref="none"),
                      event = sum_coding(event, lvls = levels(event))) %>% 
-  mutate(item_c= ifelse(item=="single", -0.5, 0.5))
+    mutate(item= factor(item),
+           item = relevel(item, ref="multiple"),
+         item = sum_coding(item, lvls = levels(item)))
+                                 
+# Tables and plots
+table(df$health_subdomain)
+table(df$event)
+table(df$item_c)
+
+df %>% ggplot(aes(x = age)) + geom_histogram()
+df %>% ggplot(aes(x = female)) + geom_histogram()
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point()
+
 
 df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_grid(.~ event)
 df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ health_subdomain)
@@ -291,7 +325,7 @@ ppc_loo_pit_qq(y = fit_masc_m1$data$cor_val,
 
 
 
-# MODEL 2 FITTING WITH DEMOGRAPHICS: AGE, AGE2, GENDER---------------------------------------------------------------
+# MODEL 2a FITTING WITH DEMOGRAPHICS: AGE, AGE2, GENDER---------------------------------------------------------------
 family <- brmsfamily(
   family = "student",
   link = "identity"
@@ -334,7 +368,7 @@ fit_masc_m2 <- brm(
 )
 
 
-# MODEL 2 EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
+# MODEL 2a EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
 # model summary 
 fit_masc_m2
@@ -342,11 +376,12 @@ fit_masc_m2
 #plot conditional effects
 plot(conditional_effects(fit_masc_m2), points=T)
 
+
 # trace plots & param. estimates
 plot(fit_masc_m2 , N = 5, ask = TRUE)
 
 
-# MODEL 2 EVAL: PP CHECKS --------------------------------------------------------
+# MODEL 2a EVAL: PP CHECKS --------------------------------------------------------
 summary(fit_masc_m2 )           
 
 # simulations vs. obs: Overall
@@ -387,7 +422,7 @@ pp_check(fit_masc_m2 ,
          type ="scatter_avg")
 
 
-# MODEL 2 EVAL: LOO --------------------------------------------------------
+# MODEL 2a EVAL: LOO --------------------------------------------------------
 
 # loo & pareto K
 model_loo <- loo(fit_masc_m2 , save_psis = TRUE, cores = 2)
@@ -404,7 +439,7 @@ ppc_loo_pit_qq(y = fit_masc_m2 $data$cor_val,
                lw = w)
 
 
-# MODEL 3 FITTING WITH MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
+# MODEL 2b FITTING WITH MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
 family <- brmsfamily(
   family = "student",
   link = "identity"
@@ -420,6 +455,120 @@ formula_m3 <- bf(
   logitrel ~ 1 + health_subdomain + item_c+ event,
   logitchange ~ 1 + health_subdomain + event,
   logitstabch ~ 1 + health_subdomain + event,
+  nl = TRUE
+)
+
+
+
+# Define the weakly informative priors
+priors <-
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc_m3 <- brm(
+  formula = formula_m3,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  # backend = "cmdstanr",
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+# MODEL 2b EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
+
+# model summary 
+fit_masc_m3
+
+#plot conditional effects
+plot(conditional_effects(fit_masc_m3), points=T)
+
+
+# trace plots & param. estimates
+plot(fit_masc_m3 , N = 5, ask = TRUE)
+
+
+# MODEL 2b EVAL: PP CHECKS --------------------------------------------------------
+summary(fit_masc_m3 )
+
+# simulations vs. obs: Overall
+pp_check(fit_masc_m3 ,
+         type ="dens_overlay",
+         ndraws = 100)
+
+
+pp_check(fit_masc_m3 ,
+         type ="stat",
+         stat = "mean",
+         ndraws = 1000,
+         binwidth = .001)
+
+pp_check(fit_masc_m3 ,
+         type ="stat",
+         stat = "sd",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m3 ,
+         type ="stat",
+         stat = "median",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m3 ,
+         type ="stat",
+         stat = "mad",
+         ndraws = 500,
+         binwidth = .001)
+
+pp_check(fit_masc_m3 ,
+         type ="stat_2d")
+
+
+pp_check(fit_masc_m3 ,
+         type ="scatter_avg")
+
+
+
+# MODEL 2b EVAL: LOO --------------------------------------------------------
+
+# loo & pareto K
+model_loo <- loo(fit_masc_m3 , save_psis = TRUE, cores = 2)
+plot(model_loo, diagnostic = "k")
+plot(model_loo, diagnostic = "n_eff")
+
+# loo pit
+w <- weights(model_loo$psis_object)
+ppc_loo_pit_overlay(y = fit_masc_m3$data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m3 ), 
+                    lw = w)
+ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val, 
+               yrep = posterior_predict(fit_masc_m3 ), 
+               lw = w)
+
+# MODEL 3 FITTING WITH MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+
+formula_m3 <- bf(
+  cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + age_dec_c + age_dec_c2+  female_c+  domain + item + event,
+  logitchange ~ 1 + age_dec_c+  age_dec_c2+ female_c+  domain + event,
+  logitstabch ~ 1 + age_dec_c+  age_dec_c2+  female_c+  domain + event,
   nl = TRUE
 )
 
@@ -518,11 +667,19 @@ ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val,
                yrep = posterior_predict(fit_masc_m3 ), 
                lw = w)
 
+
 #PREDICTIONS TIME ---------------------------------------------------------------
 
-?predict
 
-nd <- crossing(health_subdomain= unique(df$health_subdomain),  sei = 0.1, item_c=0, event=NA, interval_val=seq(0,5, by = .25))
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= NA, 
+               event=NA, 
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
 
 
 epred_draws_df <- nd %>% 
@@ -537,7 +694,7 @@ epred_draws_df <- nd %>%
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
   geom_point(data= df, aes(x=interval_val, y= cor_val)) +
-  # geom_line(data = epred_draws_agg, 
+  # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
   #           size = .5) +
@@ -555,7 +712,78 @@ ggplot(epred_draws_df) +
   #                 nudge_x = .5,
   #                 nudge_y = c(.1, -.05)
   # ) +
-  facet_wrap(.~health_subdomain,  nrow = 4) +
+  # facet_wrap(.~health_subdomain,  nrow = 4) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 8.5, color = "grey20"),
+        text = element_text(size = 9, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 9, color = "grey20"),
+        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,5))
+
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= NA, 
+               event= unique(df$event), 
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~event) +
   theme_minimal() +
   labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
        title = "Behaviour") +
@@ -595,10 +823,13 @@ pred_df_domain <- NULL
 for (curr_nlpar in c("stabch","rel","change")) {
   
   
-  nd <- crossing(health_subdomain= unique(df$health_subdomain),  
+  nd <- crossing(domain= unique(df$domain),  
                  sei = 0.1,
-                 item_c=0, 
+                 item=NA, 
                  event=NA, 
+                 age_dec_c=0,
+                 age_dec_c2=0,
+                 female_c= 0, 
                  interval_val=0)
   
   
@@ -610,13 +841,13 @@ for (curr_nlpar in c("stabch","rel","change")) {
 
  
   fit_nlpar_domain <- fit_nlpar_domain %>%
-    group_by(health_subdomain) %>% 
+    group_by(domain) %>% 
     mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
     pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
     mutate(nlpar = curr_nlpar,
            estimate = .epred,
            categ = "domain",
-           x = health_subdomain)%>% 
+           x = domain)%>% 
     select(categ, x, nlpar, estimate, dplyr::contains("er_"))
   
   
@@ -644,13 +875,16 @@ pred_df_item <- NULL
 
   
   
-  for (curr_nlpar in c("stabch","rel","change")) {
+  for (curr_nlpar in c("rel")) {
     
     
-    nd <- crossing(health_subdomain= NA,  
+    nd <- crossing(domain= NA,  
                    sei = 0.1,
-                   item_c= c(-0.5,0.5), 
+                   item= unique(df$item), 
                    event=NA, 
+                   age_dec_c=0,
+                   age_dec_c2=0,
+                   female_c= 0, 
                    interval_val=0)
     
     
@@ -662,14 +896,13 @@ pred_df_item <- NULL
     
     
     fit_nlpar_item <- fit_nlpar_item %>%
-      group_by(item_c) %>% 
+      group_by(item) %>% 
       mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
       pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
       mutate(nlpar = curr_nlpar,
              estimate = .epred,
              categ = "item",
-             x = case_when(item_c == -.5 ~ "single",
-                           item_c == .5 ~ "multiple"))%>% 
+             x = item)%>% 
       select(categ, x, nlpar, estimate, dplyr::contains("er_"))
     
     
@@ -696,10 +929,13 @@ pred_df_event <- NULL
 for (curr_nlpar in c("stabch","rel","change")) {
   
   
-  nd <- crossing(health_subdomain= NA,  
+  nd <- crossing(domain= NA,  
                  sei = 0.1,
-                 item_c= 0, 
+                 item= NA, 
                  event=unique(df$event), 
+                 age_dec_c=0,
+                 age_dec_c2=0,
+                 female_c= 0, 
                  interval_val=0)
   
   
@@ -734,8 +970,227 @@ pred_df_event <- pred_df_event %>%
                            nlpar == "stabch" ~"Stab. Change"))
 
 
+# BY AGE
 
-pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event)
+pred_df_age <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA, 
+                 age_dec_c= c(-2,0,2,4),
+                 age_dec_c2= c(4, 0, 4, 16),
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_age <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_age <- fit_nlpar_age %>%
+    group_by(age_dec_c) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "age",
+           x = case_when(age_dec_c== -2 ~ "20 y.o.", age_dec_c== 0 ~ "40 y.o.", age_dec_c== 2 ~ "60 y.o.",age_dec_c== 4 ~ "80 y.o.",))%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_age
+  
+  
+  pred_df_age <- bind_rows(pred_df, pred_df_age) 
+}
+
+pred_df_age <- pred_df_age %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+# BY GENDER
+
+pred_df_female <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA, 
+                 age_dec_c= 0,
+                 age_dec_c2= 0,
+                 female_c= c(-0.5, 0.5), 
+                 interval_val=0)
+  
+  
+  fit_nlpar_female <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_female <- fit_nlpar_female %>%
+    group_by(female_c) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "gender",
+           x = ifelse(female_c== -0.5, "male", "female"))%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_female
+  
+  
+  pred_df_female <- bind_rows(pred_df, pred_df_female) 
+}
+
+pred_df_female <- pred_df_female %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+# OVREALL 
+
+pred_df_overall <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA, 
+                 age_dec_c= 0,
+                 age_dec_c2= 0,
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_overall <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_overall <- fit_nlpar_overall %>%
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "all",
+           x = "overall")%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_overall
+  
+  
+  pred_df_overall <- bind_rows(pred_df, pred_df_overall) 
+}
+
+
+pred_df_overall <- pred_df_overall %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event, pred_df_age, pred_df_female, pred_df_overall)
+
+
+# PLOT PARAMETERS----------
+
+pred_df$categ <- factor(pred_df$categ, levels = c("all", "domain", "event", "item", "age", "gender"))
+
+pred_df$nlpar <- factor(pred_df$nlpar, levels = c("Reliability", "Change", "Stab. Change"))
+
+
+p_nlpar <- pred_df %>% ggplot() +
+  geom_crossbar(aes(xmin = .lower_0.95, x = estimate, 
+                    xmax = .upper_0.95, y = x),
+                fill = "white", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.95, x = estimate, 
+                    xmax = .upper_0.95, y = x),
+                fill = "#502a7a", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .3) +
+  geom_crossbar(aes(xmin = .lower_0.8, x = estimate,
+                    xmax = .upper_0.8, y = x),
+                fill = "white", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.8, x = estimate,
+                    xmax = .upper_0.8, y = x),
+                fill = "#502a7a",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .6) +
+  geom_crossbar(aes(xmin = .lower_0.5, x = estimate, 
+                    xmax = .upper_0.5, y = x),
+                fill = "white",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.5, x = estimate, 
+                    xmax = .upper_0.5, y = x),
+                fill = "#502a7a",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .9) +
+  geom_point(aes(x = estimate, y =x),
+             fill = "white", color = "grey20",
+             shape = 21, 
+             stroke = .25, 
+             size = 2) +
+  facet_grid(categ~nlpar, scales = "free_y", space = "free", switch = "y") + 
+  # scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+  scale_x_continuous(limits = c(0,1), expand = c(0,0), breaks = c(0,.5,1), labels = c("0","0.5" ,"1")) +
+  scale_y_discrete(position = "left") +
+  theme_minimal() +
+  geom_rect(data = subset(pred_df, x %in% c("overall")), 
+            fill = NA, colour = "black", size = .75, xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf) +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        plot.title.position = "plot",
+        strip.placement = "outside",
+        #strip.text.y = element_blank(),
+        axis.title.x = element_text(size = 9, color = "grey20"),
+        plot.margin = margin(b = 10, t = 10, r = 15, l = 0),
+        panel.spacing.x = unit(.3, "cm"),
+        # plot.tag.position = c(0.025,.9),
+        # panel.grid.major.x = element_line(linewidth = .2, color = "grey80", linetype = "solid"),
+        panel.background = element_rect(linewidth = .25, color = "grey50", fill = "NA"),
+        # plot.background = element_rect(linewidth = .25, color = "grey40", fill = "NA"),
+        strip.text =  element_text( face = "bold"),
+        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        plot.title = element_blank(),
+        # title = element_text( face = "bold", size = 9),
+        axis.text.x =  element_markdown( color = "black", size = 8, hjust=c(0,.5, 1)),
+        axis.text.y.left =  element_markdown( angle = 0, hjust = 1, color = "grey20", size = 8), # hjust = c(0,.5,.5,.5,1)
+        text = element_text()) +
+  labs(y = "", x = "Parameter Estimate", title = "Propensity", tag = "A") 
+
+p_nlpar
+
 
 
 
@@ -749,3 +1204,7 @@ loo2 <- loo(fit_masc_m2)
 loo3 <- loo(fit_masc_m3)
 
 loo_compare(loo1, loo2, loo3)
+
+# hypotjesis _______
+
+hypothesis(fit_masc_m3, "logitrel_eventevent < 0")
