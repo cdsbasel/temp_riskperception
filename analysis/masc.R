@@ -209,8 +209,8 @@ df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point()
 
 
 df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_grid(.~ event)
-df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ health_subdomain)
-df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ item_c)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ domain)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ item)
 
 # MODEL 1 FITTING WITH CORRELATION, INTERVAL AND SIZE--------------------------------------------------------
 family <- brmsfamily(
@@ -333,7 +333,7 @@ family <- brmsfamily(
 
 # Define the formula
 
-formula_m2 <- bf(
+formula_m2a <- bf(
   cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
@@ -353,8 +353,8 @@ priors <-
   prior(cauchy(0,1), class = "sigma")
 
 # Fit the model
-fit_masc_m2 <- brm(
-  formula = formula_m2,
+fit_masc_m2a <- brm(
+  formula = formula_m2a,
   prior = priors,
   family = family,
   data = df,
@@ -371,71 +371,71 @@ fit_masc_m2 <- brm(
 # MODEL 2a EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
 # model summary 
-fit_masc_m2
+fit_masc_m2a
 
 #plot conditional effects
-plot(conditional_effects(fit_masc_m2), points=T)
+plot(conditional_effects(fit_masc_m2a), points=T)
 
 
 # trace plots & param. estimates
-plot(fit_masc_m2 , N = 5, ask = TRUE)
+plot(fit_masc_m2a , N = 5, ask = TRUE)
 
 
 # MODEL 2a EVAL: PP CHECKS --------------------------------------------------------
-summary(fit_masc_m2 )           
+summary(fit_masc_m2a )           
 
 # simulations vs. obs: Overall
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="dens_overlay",
          ndraws = 100)
 
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="stat",
          stat = "mean",
          ndraws = 1000,
          binwidth = .001)
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="stat",
          stat = "sd",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="stat",
          stat = "median",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="stat",
          stat = "mad",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="stat_2d")
 
 
-pp_check(fit_masc_m2 ,
+pp_check(fit_masc_m2a ,
          type ="scatter_avg")
 
 
 # MODEL 2a EVAL: LOO --------------------------------------------------------
 
 # loo & pareto K
-model_loo <- loo(fit_masc_m2 , save_psis = TRUE, cores = 2)
+model_loo <- loo(fit_masc_m2a , save_psis = TRUE, cores = 2)
 plot(model_loo, diagnostic = "k")
 plot(model_loo, diagnostic = "n_eff")
 
 # loo pit
 w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_m2 $data$cor_val, 
-                    yrep = posterior_predict(fit_masc_m2 ), 
+ppc_loo_pit_overlay(y = fit_masc_m2a $data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m2a ), 
                     lw = w)
-ppc_loo_pit_qq(y = fit_masc_m2 $data$cor_val, 
-               yrep = posterior_predict(fit_masc_m2 ), 
+ppc_loo_pit_qq(y = fit_masc_m2a $data$cor_val, 
+               yrep = posterior_predict(fit_masc_m2a), 
                lw = w)
 
 
@@ -447,14 +447,14 @@ family <- brmsfamily(
 
 # Define the formula
 
-formula_m3 <- bf(
+formula_m2b <- bf(
   cor_val| resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
   nlf(rel ~ inv_logit(logitrel)),
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
-  logitrel ~ 1 + health_subdomain + item_c+ event,
-  logitchange ~ 1 + health_subdomain + event,
-  logitstabch ~ 1 + health_subdomain + event,
+  logitrel ~ 1 + domain + item+ event,
+  logitchange ~ 1 + domain + event,
+  logitstabch ~ 1 + domain + event,
   nl = TRUE
 )
 
@@ -468,8 +468,8 @@ priors <-
   prior(cauchy(0,1), class = "sigma")
 
 # Fit the model
-fit_masc_m3 <- brm(
-  formula = formula_m3,
+fit_masc_m2b <- brm(
+  formula = formula_m2b,
   prior = priors,
   family = family,
   data = df,
@@ -485,54 +485,54 @@ fit_masc_m3 <- brm(
 # MODEL 2b EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
 
 # model summary 
-fit_masc_m3
+fit_masc_m2b
 
 #plot conditional effects
-plot(conditional_effects(fit_masc_m3), points=T)
+plot(conditional_effects(fit_masc_m2b), points=T)
 
 
 # trace plots & param. estimates
-plot(fit_masc_m3 , N = 5, ask = TRUE)
+plot(fit_masc_m2b , N = 5, ask = TRUE)
 
 
 # MODEL 2b EVAL: PP CHECKS --------------------------------------------------------
-summary(fit_masc_m3 )
+summary(fit_masc_m2b )
 
 # simulations vs. obs: Overall
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="dens_overlay",
          ndraws = 100)
 
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="stat",
          stat = "mean",
          ndraws = 1000,
          binwidth = .001)
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="stat",
          stat = "sd",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="stat",
          stat = "median",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="stat",
          stat = "mad",
          ndraws = 500,
          binwidth = .001)
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="stat_2d")
 
 
-pp_check(fit_masc_m3 ,
+pp_check(fit_masc_m2b ,
          type ="scatter_avg")
 
 
@@ -540,20 +540,21 @@ pp_check(fit_masc_m3 ,
 # MODEL 2b EVAL: LOO --------------------------------------------------------
 
 # loo & pareto K
-model_loo <- loo(fit_masc_m3 , save_psis = TRUE, cores = 2)
+model_loo <- loo(fit_masc_m2b , save_psis = TRUE, cores = 2)
 plot(model_loo, diagnostic = "k")
 plot(model_loo, diagnostic = "n_eff")
 
 # loo pit
 w <- weights(model_loo$psis_object)
-ppc_loo_pit_overlay(y = fit_masc_m3$data$cor_val, 
-                    yrep = posterior_predict(fit_masc_m3 ), 
+ppc_loo_pit_overlay(y = fit_masc_m2b$data$cor_val, 
+                    yrep = posterior_predict(fit_masc_m2b ), 
                     lw = w)
-ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val, 
-               yrep = posterior_predict(fit_masc_m3 ), 
+ppc_loo_pit_qq(y = fit_masc_m2b$data$cor_val, 
+               yrep = posterior_predict(fit_masc_m2b ), 
                lw = w)
 
-# MODEL 3 FITTING WITH MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
+
+# MODEL 3 FITTING WITH DEMOGRAPHICS AND MEASUREMENT CHARACTERISTICS: DOMAIN, ITEM, EVENT---------------------------------------------------------------
 family <- brmsfamily(
   family = "student",
   link = "identity"
@@ -668,9 +669,20 @@ ppc_loo_pit_qq(y = fit_masc_m3$data$cor_val,
                lw = w)
 
 
+# MODEL EVAL: LOO- COMPARISON OF ALL MODEL ----------------------------------------------------
+loo1 <- loo(fit_masc_m1)
+
+loo2 <- loo(fit_masc_m2)
+
+loo3 <- loo(fit_masc_m3)
+
+loo_compare(loo1, loo2, loo3)
+
+
+
 #PREDICTIONS TIME ---------------------------------------------------------------
 
-
+## Plot correlation and interval------
 
 nd <- crossing(domain= NA,  
                sei = 0.1,
@@ -689,6 +701,8 @@ epred_draws_df <- nd %>%
 #   group_by(interval_val, health_subdomain) %>%
 #   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
 
 
 ggplot(epred_draws_df) +
@@ -743,6 +757,9 @@ ggplot(epred_draws_df) +
   scale_x_continuous(breaks = c(0,5))
 
 
+
+# Plot correlation and interval by event-------
+
 nd <- crossing(domain= NA,  
                sei = 0.1,
                item= NA, 
@@ -760,6 +777,7 @@ epred_draws_df <- nd %>%
 #   group_by(interval_val, health_subdomain) %>%
 #   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
 
 
 ggplot(epred_draws_df) +
@@ -814,9 +832,159 @@ ggplot(epred_draws_df) +
   scale_x_continuous(breaks = c(0,5))
 
 
+
+# Plot correlation and interval by domain-------
+
+nd <- crossing(domain= unique(df$domain),  
+               sei = 0.1,
+               item= NA, 
+               event= NA, 
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~domain) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 8.5, color = "grey20"),
+        text = element_text(size = 9, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 9, color = "grey20"),
+        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,5))
+
+
+# Plot correlation and interval by item-------
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= unique(df$item), 
+               event= NA, 
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~item) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 8.5, color = "grey20"),
+        text = element_text(size = 9, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 9, color = "grey20"),
+        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,5))
+
+
+
 #PREDICTIONS PARAMETERS ---------------------------------------------------------------
 
-# BY DOMAINS
+## BY DOMAINS------
 
 pred_df_domain <- NULL
 
@@ -868,7 +1036,7 @@ pred_df_domain <- pred_df_domain %>%
 
 
 
-# BY ITEM
+## BY ITEM --------
 
 
 pred_df_item <- NULL
@@ -919,7 +1087,7 @@ pred_df_item <- pred_df_item %>%
                            nlpar == "change" ~ "Change",
                            nlpar == "stabch" ~"Stab. Change"))
 
-# BY EVENT
+## BY EVENT ------------
 
 
 pred_df_event <- NULL
@@ -970,7 +1138,7 @@ pred_df_event <- pred_df_event %>%
                            nlpar == "stabch" ~"Stab. Change"))
 
 
-# BY AGE
+## BY AGE ------------
 
 pred_df_age <- NULL
 
@@ -1020,7 +1188,7 @@ pred_df_age <- pred_df_age %>%
                            nlpar == "stabch" ~"Stab. Change"))
 
 
-# BY GENDER
+## BY GENDER --------
 
 pred_df_female <- NULL
 
@@ -1070,7 +1238,7 @@ pred_df_female <- pred_df_female %>%
                            nlpar == "stabch" ~"Stab. Change"))
 
 
-# OVREALL 
+## OVREALL --------
 
 pred_df_overall <- NULL
 
@@ -1196,15 +1364,8 @@ p_nlpar
 
 
 
-# MODEL EVAL: LOO- COMPARISON OF ALL MODEL ----------------------------------------------------
-loo1 <- loo(fit_masc_m1)
 
-loo2 <- loo(fit_masc_m2)
-
-loo3 <- loo(fit_masc_m3)
-
-loo_compare(loo1, loo2, loo3)
-
-# hypotjesis _______
+# hypothesis _______ 
+#but careful because how do we interpret them? parameteres are transformed
 
 hypothesis(fit_masc_m3, "logitrel_eventevent < 0")
