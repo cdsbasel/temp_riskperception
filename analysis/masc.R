@@ -3,8 +3,8 @@
 # In this script we fit the MASC model (Anusic & Schimmack, 2016 JPSP). 
 # We also specify the dataset used to fit the MASC model and create new variables where required.
 
-# Author(s): Amanda Holzer(1), Arzie Bajrami(1), Rui Mata(1)
-# (1)Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
+# Author(s):  Arzie Bajrami(1),  Alexandra Bagaïni (1), Amanda Holzer(1), Rui Mata(1)
+# (1) Centre for Cognitive and Decision Sciences, Faculty of Psychology, University of Basel.
 
 # PACKAGES ---------------------------------------------------------------
 #install.packages("brms")
