@@ -122,10 +122,10 @@ df_cor$cor_val <- as.numeric(df_cor$cor_val)
 ####The rest of the data such as risk formulation, interval, sample size, age, female percentage, domain, subdomain, multi/single item and Intervention/exposure were manually entered from the raw data in excel. 
 ####
 
-## IMPORT CORRELATION FILE
+## IMPORT CORRELATION FILE-----
 df <- read_excel("data/cor_final.xlsx")
 
-# MEAN IMPUTATION FOR MISSING DATA
+## MEAN IMPUTATION FOR MISSING DATA-----
 # Age
 mean_age <- mean(df$age, na.rm=T)
 mean_age
@@ -141,7 +141,7 @@ df$female[i_NA_female] <- mean_female
 mean_female == mean(df$female)
 
 
-# MANIPULATE DATA
+## MANIPULATE DATA--------
 mean(df$female, na.rm=T)
 mean(df$age, na.rm=T)
 df$interval_val <- df$interval_val/365
@@ -568,8 +568,8 @@ formula_m3 <- bf(
   nlf(change ~ inv_logit(logitchange)),
   nlf(stabch ~ inv_logit(logitstabch)),
   logitrel ~ 1 + age_dec_c + age_dec_c2+  female_c+  domain + item + event,
-  logitchange ~ 1 + age_dec_c+  age_dec_c2+ female_c+  domain + event,
-  logitstabch ~ 1 + age_dec_c+  age_dec_c2+  female_c+  domain + event,
+  logitchange ~ 1 + age_dec_c+  age_dec_c2+ female_c+  domain + item + event,
+  logitstabch ~ 1 + age_dec_c+  age_dec_c2+  female_c+  domain +item + event,
   nl = TRUE
 )
 
@@ -704,7 +704,6 @@ epred_draws_df <- nd %>%
 
 
 
-
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
   geom_point(data= df, aes(x=interval_val, y= cor_val)) +
@@ -728,7 +727,7 @@ ggplot(epred_draws_df) +
   # ) +
   # facet_wrap(.~health_subdomain,  nrow = 4) +
   theme_minimal() +
-  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
   theme(strip.placement = "outside",
         legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
@@ -758,7 +757,7 @@ ggplot(epred_draws_df) +
 
 
 
-# Plot correlation and interval by event-------
+## Plot correlation and interval by event-------
 
 nd <- crossing(domain= NA,  
                sei = 0.1,
@@ -803,7 +802,7 @@ ggplot(epred_draws_df) +
   # ) +
   facet_wrap(.~event) +
   theme_minimal() +
-  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
   theme(strip.placement = "outside",
         legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
@@ -833,7 +832,7 @@ ggplot(epred_draws_df) +
 
 
 
-# Plot correlation and interval by domain-------
+## Plot correlation and interval by domain-------
 
 nd <- crossing(domain= unique(df$domain),  
                sei = 0.1,
@@ -878,7 +877,7 @@ ggplot(epred_draws_df) +
   # ) +
   facet_wrap(.~domain) +
   theme_minimal() +
-  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
   theme(strip.placement = "outside",
         legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
@@ -907,7 +906,7 @@ ggplot(epred_draws_df) +
   scale_x_continuous(breaks = c(0,5))
 
 
-# Plot correlation and interval by item-------
+## Plot correlation and interval by item-------
 
 nd <- crossing(domain= NA,  
                sei = 0.1,
@@ -952,7 +951,7 @@ ggplot(epred_draws_df) +
   # ) +
   facet_wrap(.~item) +
   theme_minimal() +
-  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "", tag = "H",
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
   theme(strip.placement = "outside",
         legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
@@ -1043,7 +1042,7 @@ pred_df_item <- NULL
 
   
   
-  for (curr_nlpar in c("rel")) {
+  for (curr_nlpar in c("stabch","rel","change")) {
     
     
     nd <- crossing(domain= NA,  
@@ -1171,7 +1170,7 @@ for (curr_nlpar in c("stabch","rel","change")) {
     mutate(nlpar = curr_nlpar,
            estimate = .epred,
            categ = "age",
-           x = case_when(age_dec_c== -2 ~ "20 y.o.", age_dec_c== 0 ~ "40 y.o.", age_dec_c== 2 ~ "60 y.o.",age_dec_c== 4 ~ "80 y.o.",))%>% 
+           x = case_when(age_dec_c== 4 ~ "80+", age_dec_c== 2 ~ "60-79", age_dec_c== 0 ~ "40-59", age_dec_c== -2 ~ "20-39"))%>% 
     select(categ, x, nlpar, estimate, dplyr::contains("er_"))
   
   
@@ -1293,9 +1292,17 @@ pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event, pred_df_age, p
 
 # PLOT PARAMETERS----------
 
-pred_df$categ <- factor(pred_df$categ, levels = c("all", "domain", "event", "item", "age", "gender"))
+pred_df <- pred_df %>%
+  mutate(categ = str_to_title(as.character(categ)),
+         x = str_to_title(as.character(x)))
+
 
 pred_df$nlpar <- factor(pred_df$nlpar, levels = c("Reliability", "Change", "Stab. Change"))
+
+
+pred_df$x <- factor(pred_df$x, levels = c("Overall", "None","Event", "Other", "Health",  "Single", "Multiple", "80+","60-79", "40-59", "20-39", "Male", "Female"))
+
+pred_df$categ <- factor(pred_df$categ, levels = c("All", "Event", "Domain",  "Item", "Age", "Gender"))
 
 
 p_nlpar <- pred_df %>% ggplot() +
@@ -1328,12 +1335,12 @@ p_nlpar <- pred_df %>% ggplot() +
              shape = 21, 
              stroke = .25, 
              size = 2) +
-  facet_grid(categ~nlpar, scales = "free_y", space = "free", switch = "y") + 
+  facet_grid(categ ~ nlpar, scales = "free_y", space = "free", switch = "y") + 
   # scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
-  scale_x_continuous(limits = c(0,1), expand = c(0,0), breaks = c(0,.5,1), labels = c("0","0.5" ,"1")) +
+  scale_x_continuous(limits = c(0, 1), expand = c(0, 0), breaks = c(0, 0.25, 0.5, 0.75, 1), labels = c("0", "0.25", "0.5", "0.75", "1")) +
   scale_y_discrete(position = "left") +
   theme_minimal() +
-  geom_rect(data = subset(pred_df, x %in% c("overall")), 
+  geom_rect(data = subset(pred_df, x %in% c("Overall")), 
             fill = NA, colour = "black", size = .75, xmin = -Inf,xmax = Inf,
             ymin = -Inf,ymax = Inf) +
   theme(panel.grid = element_blank(),
@@ -1355,13 +1362,11 @@ p_nlpar <- pred_df %>% ggplot() +
         axis.text.x =  element_markdown( color = "black", size = 8, hjust=c(0,.5, 1)),
         axis.text.y.left =  element_markdown( angle = 0, hjust = 1, color = "grey20", size = 8), # hjust = c(0,.5,.5,.5,1)
         text = element_text()) +
-  labs(y = "", x = "Parameter Estimate", title = "Propensity", tag = "A") 
+  labs(y = "", x = "Parameter Estimate", title = "Propensity") 
+
+
 
 p_nlpar
-
-
-
-
 
 
 
