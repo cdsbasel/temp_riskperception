@@ -258,6 +258,7 @@ fit_masc_m1 <- brm(
 # model summary 
 fit_masc_m1
 
+
 #plot conditional effects
 plot(conditional_effects(fit_masc_m1), points=T)
 
@@ -706,7 +707,7 @@ epred_draws_df <- nd %>%
 
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
-  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
@@ -748,12 +749,13 @@ ggplot(epred_draws_df) +
         plot.title.position = "plot",
         plot.margin = margin(b = 5, r = 5, l = 5),
         panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  scale_fill_manual(values = c("#502a7b","#502a7c" , "#502a7a" )) +
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
          size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
   coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
   scale_y_continuous(breaks = seq(0,1,0.25)) +
-  scale_x_continuous(breaks = c(0,5))
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
 
 
 
@@ -778,10 +780,9 @@ epred_draws_df <- nd %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
 
 
-
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
-  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
@@ -800,7 +801,7 @@ ggplot(epred_draws_df) +
   #                 nudge_x = .5,
   #                 nudge_y = c(.1, -.05)
   # ) +
-  facet_wrap(.~event) +
+  facet_wrap(.~str_to_title(event)) +
   theme_minimal() +
   labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
@@ -822,14 +823,16 @@ ggplot(epred_draws_df) +
         panel.grid = element_blank(),
         plot.title.position = "plot",
         plot.margin = margin(b = 5, r = 5, l = 5),
-        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4),
+        strip.text = element_text(face = "bold")) +
+  scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a" ))+
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
          size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
   coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
   scale_y_continuous(breaks = seq(0,1,0.25)) +
-  scale_x_continuous(breaks = c(0,5))
-
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+        
 
 
 ## Plot correlation and interval by domain-------
@@ -853,10 +856,9 @@ epred_draws_df <- nd %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
 
 
-
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
-  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
@@ -875,7 +877,7 @@ ggplot(epred_draws_df) +
   #                 nudge_x = .5,
   #                 nudge_y = c(.1, -.05)
   # ) +
-  facet_wrap(.~domain) +
+  facet_wrap(.~str_to_title(domain)) +
   theme_minimal() +
   labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
@@ -897,13 +899,15 @@ ggplot(epred_draws_df) +
         panel.grid = element_blank(),
         plot.title.position = "plot",
         plot.margin = margin(b = 5, r = 5, l = 5),
-        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4),
+        strip.text = element_text(face = "bold")) +
+  scale_fill_manual(values = c("#502a7b","#502a7c" , "#502a7a" )) +
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
          size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
   coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
   scale_y_continuous(breaks = seq(0,1,0.25)) +
-  scale_x_continuous(breaks = c(0,5))
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
 
 
 ## Plot correlation and interval by item-------
@@ -926,11 +930,13 @@ epred_draws_df <- nd %>%
 #   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
 
+epred_draws_df  <- epred_draws_df  %>%
+  mutate(item = str_to_title(as.character(item)))
 
 
 ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
-  geom_point(data= df, aes(x=interval_val, y= cor_val)) +
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
@@ -949,7 +955,7 @@ ggplot(epred_draws_df) +
   #                 nudge_x = .5,
   #                 nudge_y = c(.1, -.05)
   # ) +
-  facet_wrap(.~item) +
+  facet_wrap(.~str_to_title(item)) +
   theme_minimal() +
   labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
@@ -971,13 +977,15 @@ ggplot(epred_draws_df) +
         panel.grid = element_blank(),
         plot.title.position = "plot",
         plot.margin = margin(b = 5, r = 5, l = 5),
-        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4) ,
+        strip.text = element_text(face = "bold")) + 
+  scale_fill_manual(values = c("#502a7b","#502a7c" , "#502a7a" )) +
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
          size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
   coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
   scale_y_continuous(breaks = seq(0,1,0.25)) +
-  scale_x_continuous(breaks = c(0,5))
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
 
 
 
@@ -1237,7 +1245,7 @@ pred_df_female <- pred_df_female %>%
                            nlpar == "stabch" ~"Stab. Change"))
 
 
-## OVREALL --------
+## OVERALL --------
 
 pred_df_overall <- NULL
 
@@ -1289,6 +1297,27 @@ pred_df_overall <- pred_df_overall %>%
 
 pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event, pred_df_age, pred_df_female, pred_df_overall)
 
+
+# TABLE PARAMETERS----------
+library(gt)
+
+# Selecting only the specified columns from pred_df
+pred_df_selected <- pred_df[, c("categ", "x", "nlpar", "estimate", ".lower_0.95", ".upper_0.95")]
+
+# Create a gt table
+table_gt <- gt(data = pred_df_selected,
+               rowname_col = "x",
+               caption = "Prediction Results",
+               rownames_to_stub = TRUE)
+
+# Formatting
+table_gt <- table_gt %>%
+  tab_header(title = "Estimates and Confidence Intervals") %>%
+  fmt_number(columns = c("estimate", ".lower_0.95", ".upper_0.95"), decimals = 3) %>%
+  cols_align(align = "center") 
+
+# Print the table
+table_gt
 
 # PLOT PARAMETERS----------
 
