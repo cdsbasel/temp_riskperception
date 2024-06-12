@@ -780,7 +780,7 @@ epred_draws_df <- nd %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
 
 
-ggplot(epred_draws_df) +
+p_event <- ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
   geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
@@ -824,7 +824,9 @@ ggplot(epred_draws_df) +
         plot.title.position = "plot",
         plot.margin = margin(b = 5, r = 5, l = 5),
         panel.background = element_rect(color = "grey75", fill = NA, size = .4),
-        strip.text = element_text(face = "bold")) +
+        strip.text = element_text(face = "bold"),
+        strip.text.y = element_text(size = 10),
+        strip.text.x = element_text(size = 10)) +
   scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a" ))+
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
@@ -832,7 +834,13 @@ ggplot(epred_draws_df) +
   coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
   scale_y_continuous(breaks = seq(0,1,0.25)) +
   scale_x_continuous(breaks = c(0,1,2,3,4,5))
-        
+
+
+p_event
+
+# save plot as jpeg file 
+ggsave(plot = p_event, filename = "analysis/masc_event.jpeg",
+       dpi = 300, width = 25, height = 37, units = "cm") 
 
 
 ## Plot correlation and interval by domain-------
@@ -983,7 +991,7 @@ ggplot(epred_draws_df) +
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
          size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
-  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5)) +
   scale_y_continuous(breaks = seq(0,1,0.25)) +
   scale_x_continuous(breaks = c(0,1,2,3,4,5))
 
@@ -1299,7 +1307,6 @@ pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event, pred_df_age, p
 
 
 # TABLE PARAMETERS----------
-library(gt)
 
 # Selecting only the specified columns from pred_df
 pred_df_selected <- pred_df[, c("categ", "x", "nlpar", "estimate", ".lower_0.95", ".upper_0.95")]
@@ -1316,8 +1323,9 @@ table_gt <- table_gt %>%
   fmt_number(columns = c("estimate", ".lower_0.95", ".upper_0.95"), decimals = 3) %>%
   cols_align(align = "center") 
 
-# Print the table
-table_gt
+# save table as html file
+htmltools::save_html(table_gt, file = "analysis/table_estimates.html") 
+
 
 # PLOT PARAMETERS----------
 
@@ -1366,7 +1374,7 @@ p_nlpar <- pred_df %>% ggplot() +
              size = 2) +
   facet_grid(categ ~ nlpar, scales = "free_y", space = "free", switch = "y") + 
   # scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
-  scale_x_continuous(limits = c(0, 1), expand = c(0, 0), breaks = c(0, 0.25, 0.5, 0.75, 1), labels = c("0", "0.25", "0.5", "0.75", "1")) +
+  scale_x_continuous(limits = c(0, 1), expand = c(0, 0), breaks = c(0, 0.5, 1), labels = c("0", "0.5", "1")) +
   scale_y_discrete(position = "left") +
   theme_minimal() +
   geom_rect(data = subset(pred_df, x %in% c("Overall")), 
@@ -1377,19 +1385,21 @@ p_nlpar <- pred_df %>% ggplot() +
         plot.title.position = "plot",
         strip.placement = "outside",
         #strip.text.y = element_blank(),
-        axis.title.x = element_text(size = 9, color = "grey20"),
+        axis.title.x = element_text(size = 10, color = "grey20"),
         plot.margin = margin(b = 10, t = 10, r = 15, l = 0),
         panel.spacing.x = unit(.3, "cm"),
         # plot.tag.position = c(0.025,.9),
         # panel.grid.major.x = element_line(linewidth = .2, color = "grey80", linetype = "solid"),
         panel.background = element_rect(linewidth = .25, color = "grey50", fill = "NA"),
-        # plot.background = element_rect(linewidth = .25, color = "grey40", fill = "NA"),
+        #plot.background = element_rect(linewidth = .25, color = "grey40", fill = "NA"),
         strip.text =  element_text( face = "bold"),
-        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        strip.text.y = element_text(size = 10),
+        strip.text.x = element_text(size = 10),
+        plot.tag  = element_text( size = 10, face = "bold", color = "grey20"),
         plot.title = element_blank(),
-        # title = element_text( face = "bold", size = 9),
-        axis.text.x =  element_markdown( color = "black", size = 8, hjust=c(0,.5, 1)),
-        axis.text.y.left =  element_markdown( angle = 0, hjust = 1, color = "grey20", size = 8), # hjust = c(0,.5,.5,.5,1)
+        title = element_text( face = "bold", size = 10),
+        axis.text.x =  element_markdown( color = "black", size = 10, hjust=c(0,.5, 1)),
+        axis.text.y.left =  element_markdown( angle = 0, hjust = 1, color = "grey20", size = 10), # hjust = c(0,.5,.5,.5,1)
         text = element_text()) +
   labs(y = "", x = "Parameter Estimate", title = "Propensity") 
 
@@ -1397,9 +1407,9 @@ p_nlpar <- pred_df %>% ggplot() +
 
 p_nlpar
 
+# save plot as jpeg file 
+ggsave(plot = p_nlpar, filename = "analysis/masc_pred.jpeg",
+       dpi = 300, width = 25, height = 37, units = "cm") 
 
 
-# hypothesis _______ 
-#but careful because how do we interpret them? parameteres are transformed
 
-hypothesis(fit_masc_m3, "logitrel_eventevent < 0")
