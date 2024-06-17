@@ -761,6 +761,7 @@ ggplot(epred_draws_df) +
 
 ## Plot correlation and interval by event-------
 
+
 nd <- crossing(domain= NA,  
                sei = 0.1,
                item= NA, 
@@ -780,9 +781,20 @@ epred_draws_df <- nd %>%
 #   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
 
 
+# Set order and capitalise first letter
+epred_draws_df$event <- str_to_title(epred_draws_df$event)
+
+epred_draws_df$event<- factor(epred_draws_df$event, levels = c("None","Event"))
+
+df_plot <- df %>% 
+  mutate(event = str_to_title(event)) 
+
+df_plot$event<- factor(df_plot$event, levels = c("None","Event"))
+
+# Plot
 p_event <- ggplot(epred_draws_df) +
   stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
-  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  geom_point(data= df_plot, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
   # geom_line(data = epred_draws_agg,
   #           aes(x = time_diff_dec*10, y = .epred),
   #           color = "grey95",
@@ -801,7 +813,7 @@ p_event <- ggplot(epred_draws_df) +
   #                 nudge_x = .5,
   #                 nudge_y = c(.1, -.05)
   # ) +
-  facet_wrap(.~str_to_title(event)) +
+  facet_wrap(.~event) +
   theme_minimal() +
   labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
        title = "Behaviour") +
@@ -812,12 +824,12 @@ p_event <- ggplot(epred_draws_df) +
         legend.key.width = unit(1, "cm"),
         legend.key.size = unit(.3, "cm"),
         # plot.tag.position = c(0,.8),
-        legend.text = element_text(size = 8.5, color = "grey20"),
-        text = element_text(size = 9, color = "grey40"),
+        legend.text = element_text(size = 10, color = "grey20"),
+        text = element_text(size = 12, color = "grey40"),
         axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
         axis.text.x = element_text( hjust=c(0,1)),
-        title = element_text(size = 9, color = "grey20"),
-        plot.tag  = element_text( size = 11, face = "bold", color = "grey20"),
+        title = element_text(size = 12, color = "grey20"),
+        plot.tag  = element_text( size = 12, face = "bold", color = "grey20"),
         panel.spacing = unit(.5, "lines"),
         plot.title = element_blank(),
         panel.grid = element_blank(),
@@ -825,8 +837,8 @@ p_event <- ggplot(epred_draws_df) +
         plot.margin = margin(b = 5, r = 5, l = 5),
         panel.background = element_rect(color = "grey75", fill = NA, size = .4),
         strip.text = element_text(face = "bold"),
-        strip.text.y = element_text(size = 10),
-        strip.text.x = element_text(size = 10)) +
+        strip.text.y = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
   scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a" ))+
   guides(color = guide_legend(override.aes = list(size = .75)),
          fill =  guide_legend(override.aes = list(size = .75)),
@@ -838,9 +850,10 @@ p_event <- ggplot(epred_draws_df) +
 
 p_event
 
+
 # save plot as jpeg file 
 ggsave(plot = p_event, filename = "analysis/masc_event.jpeg",
-       dpi = 300, width = 25, height = 37, units = "cm") 
+       dpi = 300, width = 40, height = 37, units = "cm") 
 
 
 ## Plot correlation and interval by domain-------
@@ -1403,6 +1416,8 @@ p_nlpar <- pred_df %>% ggplot() +
         text = element_text()) +
   labs(y = "", x = "Parameter Estimate", title = "Propensity") 
 
+
+.3
 
 
 p_nlpar
