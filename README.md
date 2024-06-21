@@ -1,11 +1,9 @@
 # temp_riskperception
 
-This repository provides data and code concerning a project surveying research on the temporal stability of risk perception.
+This repository provides data and code concerning a scoping review surveying research on the temporal stability of risk perception (OSF: https://osf.io/2tey7).
 
 # folder structure:
 
-data: includes data
+data: includes data from the scoping review
 
-R: includes scripts for wrangling and analysis
-
-resources: additional materials
+analysis: includes R scripts for data wrangling, analysis, and visualisation
