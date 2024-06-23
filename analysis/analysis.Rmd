@@ -1,0 +1,174 @@
+---
+title: "analysis"
+author: "Amanda Holzer"
+date: "2024-06-23"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+# PACKAGES ---------------------------------------------------------------
+#load packages 
+#install.packages("dplyr")
+#install.packages("here")
+#install.packages("viridis")
+#install.packages("tidyverse")
+#install.packages("devtools")
+library(dplyr)
+library(here)
+library(readr)
+library(tidyverse)
+library(ggplot2)
+library(knitr)
+library(viridis)
+library(devtools)
+library(flexplot)
+
+# PATH ---------------------------------------------------------------
+#set working directory
+setwd(here())
+here("data/final.csv")
+getwd()
+
+# DATA ---------------------------------------------------------------
+#Import the data set
+df_final <- read_csv(here("data", "final.csv"))
+```
+
+```{r}
+### plot domains with study design
+### Function to create a single horizontal bar plot for counts of 1
+create_combined_horizontal_bar <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+ df_long <- df %>%
+  tidyr::gather(key = "variable", value = "value", columns_of_interest) %>%
+  filter(value == 1)
+  
+  # Arrange levels of 'variable' by count in ascending order
+  df_long$variable <- factor(df_long$variable, levels = names(sort(table(df_long$variable), decreasing = FALSE)))
+  
+  # Define custom colors using hex color codes
+  custom_colors <- c("#440154", "#22A884")  # Hex color codes without alpha
+  
+  # Plotting the horizontal bar plot using ggplot2
+  ggplot(df_long, aes(x = value, y = variable, fill = study_design)) +
+    geom_bar(stat = "identity", position = position_stack(reverse = TRUE), color = NA) +  # Reverse the stacking order
+    scale_fill_manual(values = setNames(custom_colors, unique(df_long$study_design))) +  # Apply custom colors to study_design levels
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
+    labs(x = "Number of Studies", y = NULL, title = NULL) +  # Remove y-axis label and title
+    xlab("Number of Studies")  # Set x-axis label
+}
+# Apply the function to df_final
+create_combined_horizontal_bar(df_final)
+```
+
+
+
+```{r}
+###plot domain with measurement points-----
+#create measurement category with 2, 3, and 3+
+df_final <- df_final %>%
+  mutate(measure = ifelse(times_measured_1 == 2, "2",
+                          ifelse(times_measured_1 == 3, "3", "3+")))
+
+# Function to create a single horizontal bar plot for counts of 1
+create_combined_horizontal_bar <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "variable", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Arrange levels of 'variable' by count in ascending order
+  df_long$variable <- factor(df_long$variable, levels = names(sort(table(df_long$variable), decreasing = FALSE)))
+  
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = value, y = variable, fill = measure)) +
+    geom_bar(stat = "identity", position = position_stack(reverse = TRUE), color = NA) +  # Reverse the stacking order
+    scale_fill_viridis_d() +  # Use Viridis color palette for measure variable
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank()) +  # Remove grid lines and borders
+    labs(x = "Number of Studies", y = NULL, title = NULL) +  # Remove y-axis label and title
+    xlab("Number of Studies")  # Set x-axis label
+}
+
+# Apply the function to df_final
+create_combined_horizontal_bar(df_final)
+
+
+```
+
+
+
+```{r}
+#kind of risk (risk, concern, worry)
+create_combined_horizontal_bar <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "variable", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = variable, fill = as.factor(risk_1))) +
+    geom_bar(position = "fill", stat = "count", color = "white") +
+    coord_flip() +  # Flip the coordinates for a horizontal bar plot
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(),
+          axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
+    labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
+    scale_fill_viridis_d(name = "Risk Categories")  # Use Viridis color palette and customize legend title
+}
+
+# Apply the function to df_final
+create_combined_horizontal_bar(df_final)
+```
+
+
+
+
+```{r}
+
+# Define the function
+create_combined_horizontal_bar <- function(df) {
+  columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
+  
+  # Create a long-format data frame for ggplot
+  df_long <- df %>%
+    gather(key = "variable", value = "value", columns_of_interest) %>%
+    filter(value == 1)  # Filter only rows where the value is 1
+  
+  # Create a new factor combining intervention and exposure columns into "event" and "no event"
+  df_long$event_category <- ifelse(
+    df_long$intervention_yesno_1 == 0 & df_long$exposure_yesno_1 == 0, 
+    "No Event", 
+    "Event"
+  )
+  
+  # Plotting the horizontal bar plot using ggplot2 with Viridis color scale
+  ggplot(df_long, aes(x = variable, fill = event_category)) +
+    geom_bar(position = "fill", stat = "count", color = "white") +
+    coord_flip() +  # Flip the coordinates for a horizontal bar plot
+    theme_minimal() +
+    theme(panel.grid = element_blank(), panel.border = element_blank(),
+          axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
+    labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
+    scale_fill_viridis_d(name = "Event Category", labels = c("No Event", "Event"))  # Use Viridis color palette and customize legend title
+}
+
+# Apply the function to df_final
+create_combined_horizontal_bar(df_final)
+
+```
+
+
+
+#placeholder tabelle
+```{r}
+
+```
+
