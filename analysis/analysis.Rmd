@@ -20,8 +20,7 @@ library(tidyverse)
 library(ggplot2)
 library(knitr)
 library(viridis)
-library(devtools)
-library(flexplot)
+#library(flexplot)
 
 # PATH ---------------------------------------------------------------
 #set working directory
