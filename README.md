@@ -4,6 +4,6 @@ This repository provides data and code concerning a scoping review surveying res
 
 # folder structure:
 
-data: includes data from the scoping review
+data: includes data from the scoping review, for the masc model and a codebook
 
-analysis: includes R scripts for data wrangling, analysis, and visualisation
+analysis: includes a Rmd file for analysis, and visualisation
