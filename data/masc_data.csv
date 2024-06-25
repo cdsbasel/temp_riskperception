@@ -1,0 +1,117 @@
+﻿x1;author;paper_title;study_design;formulation;cor_name;cor_val;interval_val;n;age;female;domain;health_subdomain;item ;event
+1;Roberts;A 2-Study Psychometric Evaluation of the Modified Dementia Worry Scale;longitudinal;worry;correlation_results_1;0.68;28;63;37.14;0.43;health;dementia;multiple;none
+110;Yilmaz;"Psychometric Characteristics of the Penn State Worry 
+Questionnaire and Metacognitions Questionnaire-30 and Metacognitive Predictors of Worry and Obsessive–Compulsive Symptoms in a Turkish Sample";longitudinal;worry;correlation_results_1;0.88;42;26;28.39;0.07;health;questionnaire validation;multiple;none
+120;Schmid;Reducing Aggressive Intergroup Action Tendencies: Effects of Intergroup Contact Via Perceived Intergroup Threat;serial cross-sectional;threat;correlation_results_1;0.42;365;7042;49.36;0.53;social;social;multiple;none
+140;Weaver;"Self-Efficacy in Sleep Apnea: Instrument Development and Patient Perceptions of Obstructive Sleep Apnea Risk, Treatment Benefit, and Volition to Use Continuous
+Positive Airway Pressure";longitudinal;risk;correlation_results_1;0.68;7;22;42.52;0.05;health;other;multiple;intervention
+141;Bränström;Stability of questionnaire items measuring behaviours, attitudes and stages of change related to sun exposure;serial cross-sectional;risk;correlation_results_1;0.47;21;52;40;1;health;other;multiple;none
+143;Ha;Investigating temporal effects of risk perceptions and satisfaction on customer loyalty;longitudinal;risk;correlation_results_1;0.85;690;253;;0.37;finance;finance;multiple;none
+15;Xin;The relationship between adolescent risk perception and emotions during the COVID‑19: a short‑term longitudinal study;longitudinal;risk;correlation_results_1;0.57;7;304;;0.57;health;virus;multiple;exposure
+153;Senol-Durak;"Development of Work Stress Scale for Correctional
+Officers";longitudinal;threat;correlation_results_1;0.78;21;119;30.44;0.08;health;questionnaire validation;multiple;none
+157;Nielsen;"Prevalence and occupational predictors of psychological distress
+in the offshore petroleum industry: a prospective study";longitudinal;risk;correlation_results_1;0.62;180;741;45;0.15;health;other;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1;0.58;365;213;13.06;0.45;health;drug;multiple;none
+16;Renner;Preventive Health Behavior and Adaptive Accuracy of Risk Perceptions;longitudinal;risk;correlation_results_1;0.64;120;147;31.16;0.55;health;food safety;multiple;none
+160;Schmidt;Actual versus perceived infection rates of COVID-19: Impact on distress, behavior and disability;longitudinal;worry;correlation_results_1;0.75;30;170;39.7;0.47;health;virus;multiple;exposure
+165;Bae;"Examining ""intact"" tourism behaviour in South Korea during the COVID-19 pandemic: a two-wave longitudinal study (March and September 2020)";longitudinal;risk;correlation_results_1;0.295;90;290;38.9;0.503;health;virus;multiple;exposure
+166;Aslan;Adaption and validation of the Turkish version of the vaccine hesitancy 5 point Likert Scale;longitudinal;risk;correlation_results_1;0.97;14;40;31.2;0.65;health;virus;multiple;none
+167;Vornanen;Diabetes and Cardiovascular Disease Risk Perception and Risk Indicators: a 5-Year Follow-up;longitudinal;risk;correlation_results_1;0.58;1825;909;55.9;0.577;health;diabetes;single;intervention
+168;Kent;The relationship between perceived risk, thought intrusiveness and emotional well-being in women receiving counselling for breast cancer risk in a family history clinic;longitudinal;risk;correlation_results_1;0.71;90;49;36.8;1;health;cancer;multiple;intervention
+172;Köteles;Modern Health Worries, Somatosensory Amplification and Subjective Symptoms: A Longitudinal Study;longitudinal;worry;correlation_results_1;0.74;60;366;20.91;0.64;mixed;other;multiple;none
+176;Gong;Threats of COVID-19 arouse public awareness of climate change risks;longitudinal;risk;correlation_results_1;0.49;30;1266;;0.5;mixed;virus;multiple;exposure
+179;Eggers;Predicting Primary and Secondary Abstinence Among Adolescent Boys and Girls in the Western Cape, South Africa;longitudinal;risk;correlation_results_1;0.49;180;652;13.6;0;health;other;multiple;intervention
+183;Martin;Dementia Worry and the Perception of Personal Risk;longitudinal;risk;correlation_results_1;0.56;717;129;39;0.79;health;dementia;single;none
+189;Baumgartner;Assessing Causality in the Relationship Between Adolescents’ Risky Sexual Online Behavior and Their Perceptions of this Behavior;longitudinal;risk;correlation_results_1;0.52;180;1445;14.5;0.49;health;other;multiple;none
+197;Helweg-Larsen;Does Moralization Motivate Smokers to Quit? A Longitudinal Study of Representative Samples of Smokers in the United States and Denmark;longitudinal;risk;correlation_results_1;0.7;180;431;47.96;0.466;health;drug;single;none
+199;Shiloh;Making sense of COVID-19: a longitudinal investigation of the initial stages of developing illness representations;longitudinal;threat;correlation_results_1;0.49;120;422;41.99;0.49;health;virus;multiple;exposure
+2;Green;Factor Structure, Validity and Reliability of the Cambridge Worry Scale in a Pregnant Population;longitudinal;worry;correlation_results_1;0.69;66.5;1207;27.07;1;health;pregnancy;multiple;exposure
+200;Martens;Longitudinal associations between risk appraisal of base stations for mobile phones, radio or television and non-specific symptoms;longitudinal;risk;correlation_results_1;0.55;365;1720;;0.53;health;other;multiple;exposure
+205;Shiloh;Adherence to COVID-19 Protective Behaviors: A Matter of Cognition or Emotion?;longitudinal;worry;correlation_results_1;0.64;90;422;41.99;0.49;health;virus;multiple;exposure
+21;Prati;"Human values and beliefs and concern about climate
+change: a Bayesian longitudinal analysis";longitudinal;risk;correlation_results_1;0.71;60;298;26;0.76;nature;nature;multiple;none
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1;0.54;7;557;20.42;0.7;health;virus;multiple;exposure
+22;Crittendon;Assessing worry in older and younger adults: Psychometric properties of an abbreviated Penn State Worry Questionnaire (PSWQ-A);longitudinal;worry;correlation_results_1;0.92;14;115;71.6;0.73;health;other;multiple;none
+223;Baucum;Modeling affective and cognitive responses to soft‑target terrorism over time.;longitudinal;risk;correlation_results_1;0.44;180;1052;;0.52;crime;crime;multiple;exposure
+229;Stuijfzand;Young children have social worries too:  validation of a brief parent report measure of social worries in children aged 4–8 years;longitudinal;worry;correlation_results_1;0.87;14;106;6.25;0.991;social;social;multiple;none
+234;Wuthrich;Comparison of the Penn State Worry Questionnaire (PSWQ) and abbreviated version (PSWQ-A) in a clinical and non-clinical population of older adults;longitudinal;worry;correlation_results_1;0.7;84;22;;0.826;health;questionnaire validation;multiple;none
+24;Osman;Development and psychometric properties of the Student Worry Questionnaire-30;longitudinal;worry;correlation_results_1;0.86;28;350;20.6;0.73;mixed;questionnaire validation;multiple;none
+26;Stöber;Reliability and validity of two widely-used worry questionnaires: self-report and self-peer convergence;longitudinal;worry;correlation_results_1;0.87;28;148;26.9;0.58;health;questionnaire validation;multiple;none
+27;Kuper-Smith;Risk perception and optimism during the early stages of the COVID-19 pandemic;longitudinal;risk;correlation_results_1;-0.3784;60;432;33.3;0.625;health;virus;multiple;exposure
+3;Caruso;The Cancer Worry Scale Revised for Breast Cancer Genetic Counseling;serial cross-sectional;risk;correlation_results_1;0.7;30;50;45.96;1;health;cancer;multiple;none
+37;Hopko;Assessing Worry in Older Adults: Confirmatory Factor Analysis of the Penn State Worry Questionnaire and Psychometric Properties of an Abbreviated Model;longitudinal;worry;correlation_results_1;0.63;14;85;66.2;;health;questionnaire validation;multiple;intervention
+39;Feng;Development and psychometric testing of a questionnaire to assess Nurse’s perception of risks during enteral nutrition;longitudinal;risk;correlation_results_1;0.815;10;34;;0.946;health;questionnaire validation;multiple;none
+4;Stewart;Psychometric Properties of the Climate Change Worry Scale;longitudinal;worry;correlation_results_1;0.91;14;54;20.9;0.83;mixed;questionnaire validation;multiple;none
+42;Kaufman;Factor Structure and Stability of Smoking-Related Health Beliefs in the National Lung Screening Trial;longitudinal;risk;correlation_results_1;0.68;360;211;61.8;0.37;health;drug;multiple;none
+45;Muris;The Stability of Threat Perception Abnormalities and Anxiety Disorder Symptoms in Non-Clinical Children;longitudinal;threat;correlation_results_1;0.44;28;113;10.1;0.33;health;mental health;multiple;none
+46;Liao;"Comparison of Different Risk Perception Measures in
+Predicting Seasonal Influenza Vaccination among Healthy Chinese Adults in Hong Kong: A Prospective
+Longitudinal Study";longitudinal;risk;correlation_results_1;0.13;365;505;;;health;virus;multiple;none
+5;Freeman;The Dunn Worry Questionnaire and the Paranoia Worries Questionnaire: new assessments of worry;longitudinal;worry;correlation_results_1;0.97;7;75;;;health;other;multiple;intervention
+50;Elad-Strenger;"Revisiting the Effects of Societal Threat Perceptions on
+Conflict-related Positions: A Three-wave Study";longitudinal;threat;correlation_results_1;0.47;90;437;41.2;0.52;political;political;multiple;exposure
+57;Kang;Reliability and Validity of the Korean Version of the Penn State Worry Questionnaire in Primary School Children;longitudinal;worry;correlation_results_1;0.83;21;883;10;;health;questionnaire validation;multiple;none
+63;Janssen;Measuring risk perceptions of skin cancer: Reliability and validity of different operationalizations;longitudinal;risk;correlation_results_1;0.51;18;175;22;0.49;health;cancer;multiple;exposure
+66;Gamage;"Adaptation, translation and reliability of the Australian ‘Juniors Enjoying Cricket Safely’ injury risk perception 
+questionnaire for Sri Lanka";longitudinal;risk;correlation_results_1;0.22;14;54;;0;health;other;multiple;none
+72;Frojd;Worry and rumination predict insomnia in patients with coronary heart disease: a cross-sectional study with long-term follow-up;longitudinal;worry;correlation_results_1;0.91;28;686;;;health;other;multiple;none
+79;Conner;The stability of risk and benefit perceptions: a longitudinal study assessing the perception of biotechnology;longitudinal;risk;correlation_results_1;0.49;730;534;57;0.42;health;other;multiple;none
+81;Gordon;Resistance exercise training for anxiety and worry symptoms among young adults: a randomized controlled trial;longitudinal;worry;correlation_results_1;-0.19;14;28;26;0.64;health;mental health;multiple;intervention
+97;Siegrist;Food disgust sensitivity influences the perception of food hazards: Results from longitudinal and cross-cultural studies;longitudinal;risk;correlation_results_1;0.71;365;2813;58;0.54;health;food safety;multiple;none
+1;Roberts;A 2-Study Psychometric Evaluation of the Modified Dementia Worry Scale;longitudinal;worry;correlation_results_1_1;0.9;28;63;37.14;0.43;health;dementia;multiple;none
+141;Bränström;Stability of questionnaire items measuring behaviours, attitudes and stages of change related to sun exposure;serial cross-sectional;risk;correlation_results_1_1;0.58;21;52;40;1;health;other;multiple;none
+143;Ha;Investigating temporal effects of risk perceptions and satisfaction on customer loyalty;longitudinal;risk;correlation_results_1_1;0.88;690;253;;0.37;finance;finance;multiple;none
+15;Xin;The relationship between adolescent risk perception and emotions during the COVID‑19: a short‑term longitudinal study;longitudinal;risk;correlation_results_1_1;0.46;7;304;;0.57;health;virus;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_1;0.55;365;189;13.06;0.45;health;drug;multiple;none
+165;Bae;"Examining ""intact"" tourism behaviour in South Korea during the COVID-19 pandemic: a two-wave longitudinal study (March and September 2020)";longitudinal;risk;correlation_results_1_1;0.224;90;290;38.9;0.503;health;virus;multiple;exposure
+176;Gong;Threats of COVID-19 arouse public awareness of climate change risks;longitudinal;risk;correlation_results_1_1;0.31;30;1266;;0.5;mixed;virus;multiple;exposure
+179;Eggers;Predicting Primary and Secondary Abstinence Among Adolescent Boys and Girls in the Western Cape, South Africa;longitudinal;risk;correlation_results_1_1;0.43;180;1018;13.6;1;health;other;multiple;intervention
+199;Shiloh;Making sense of COVID-19: a longitudinal investigation of the initial stages of developing illness representations;longitudinal;worry;correlation_results_1_1;0.66;120;422;41.99;0.49;health;virus;multiple;exposure
+2;Green;Factor Structure, Validity and Reliability of the Cambridge Worry Scale in a Pregnant Population;longitudinal;worry;correlation_results_1_1;0.72;66.5;1207;27.07;1;health;pregnancy;multiple;exposure
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1_1;0.34;240;474;20.42;0.7;health;virus;multiple;exposure
+22;Crittendon;Assessing worry in older and younger adults: Psychometric properties of an abbreviated Penn State Worry Questionnaire (PSWQ-A);longitudinal;worry;correlation_results_1_1;0.95;42;115;71.6;0.73;health;other;multiple;none
+234;Wuthrich;Comparison of the Penn State Worry Questionnaire (PSWQ) and abbreviated version (PSWQ-A) in a clinical and non-clinical population of older adults;longitudinal;worry;correlation_results_1_1;0.74;84;22;;0.826;health;questionnaire validation;multiple;none
+45;Muris;The Stability of Threat Perception Abnormalities and Anxiety Disorder Symptoms in Non-Clinical Children;longitudinal;threat;correlation_results_1_1;0.63;28;113;10.1;0.33;health;mental health;multiple;none
+46;Liao;"Comparison of Different Risk Perception Measures in
+Predicting Seasonal Influenza Vaccination among Healthy Chinese Adults in Hong Kong: A Prospective
+Longitudinal Study";longitudinal;risk;correlation_results_1_1;0.96;365;505;;;health;virus;multiple;none
+50;Elad-Strenger;"Revisiting the Effects of Societal Threat Perceptions on
+Conflict-related Positions: A Three-wave Study";longitudinal;threat;correlation_results_1_1;0.54;90;437;41.2;0.52;political;political;multiple;exposure
+63;Janssen;Measuring risk perceptions of skin cancer: Reliability and validity of different operationalizations;longitudinal;risk;correlation_results_1_1;0.58;18;175;22;0.49;health;cancer;multiple;intervention
+66;Gamage;"Adaptation, translation and reliability of the Australian ‘Juniors Enjoying Cricket Safely’ injury risk perception 
+questionnaire for Sri Lanka";longitudinal;risk;correlation_results_1_1;0.6;14;54;;0;health;other;multiple;none
+79;Conner;The stability of risk and benefit perceptions: a longitudinal study assessing the perception of biotechnology;longitudinal;risk;correlation_results_1_1;0.59;730;534;57;0.42;health;other;multiple;none
+15;Xin;The relationship between adolescent risk perception and emotions during the COVID‑19: a short‑term longitudinal study;longitudinal;risk;correlation_results_1_2;0.58;7;304;;0.57;health;virus;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_2;0.45;365;157;13.06;0.45;health;drug;multiple;none
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1_2;0.5;233;474;20.42;0.7;health;virus;multiple;exposure
+22;Crittendon;Assessing worry in older and younger adults: Psychometric properties of an abbreviated Penn State Worry Questionnaire (PSWQ-A);longitudinal;worry;correlation_results_1_2;0.87;14;183;21.3;0.69;health;other;multiple;none
+50;Elad-Strenger;"Revisiting the Effects of Societal Threat Perceptions on
+Conflict-related Positions: A Three-wave Study";longitudinal;threat;correlation_results_1_2;0.52;90;437;41.2;0.52;political;political;multiple;exposure
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1_3;0.26;330;474;20.42;0.7;health;virus;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_3;0.42;730;189;13.06;0.45;health;drug;multiple;none
+50;Elad-Strenger;"Revisiting the Effects of Societal Threat Perceptions on
+Conflict-related Positions: A Three-wave Study";longitudinal;threat;correlation_results_1_3;0.38;90;437;41.2;0.52;political;political;multiple;exposure
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1_4;0.4;323;474;20.42;0.7;health;virus;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_4;0.43;1095;157;13.06;0.45;health;drug;multiple;none
+210;Wu;A longitudinal study on college students’ depressive symptoms during the COVID-19 pandemic: The trajectories, antecedents, and outcomes;longitudinal;risk;correlation_results_1_5;0.6;90;474;20.42;0.7;health;virus;multiple;exposure
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_5;0.38;1460;135;13.06;0.45;health;drug;multiple;none
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_6;0.42;730;157;13.06;0.45;health;drug;multiple;none
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_7;0.42;1095;135;13.06;0.45;health;drug;multiple;none
+159;Shadur;Alcohol use and perceived drinking risk trajectories across adolescence: the role of alcohol expectancies;longitudinal;risk;correlation_results_1_8;0.54;730;135;13.06;0.45;health;drug;multiple;none
+1;Roberts;A 2-Study Psychometric Evaluation of the Modified Dementia Worry Scale;longitudinal;worry;correlation_results_2;0.78;56;63;37.38;0.45;health;dementia;multiple;none
+165;Bae;"Examining ""untact"" tourism behaviour in South Korea during the COVID-19 pandemic: a two-wave longitudinal study (March and September 2020)";longitudinal;risk;correlation_results_2;0.224;90;290;38.9;0.503;health;virus;multiple;exposure
+167;Vornanen;Diabetes and Cardiovascular Disease Risk Perception and Risk Indicators: a 5-Year Follow-up;longitudinal;risk;correlation_results_2;0.55;1825;909;55.9;0.577;health;diabetes;single;intervention
+168;Kent;The relationship between perceived risk, thought intrusiveness and emotional well-being in women receiving counselling for breast cancer risk in a family history clinic;longitudinal;risk;correlation_results_2;0.73;180;49;36.8;1;health;cancer;multiple;intervention
+183;Martin;Dementia Worry and the Perception of Personal Risk;longitudinal;worry;correlation_results_2;0.69;717;129;39;0.79;health;dementia;multiple;none
+197;Helweg-Larsen;Does Moralization Motivate Smokers to Quit? A Longitudinal Study of Representative Samples of Smokers in the United States and Denmark;longitudinal;risk;correlation_results_2;0.81;180;428;50.79;0.54;health;drug;single;none
+200;Martens;Longitudinal associations between risk appraisal of base stations for mobile phones, radio or television and non-specific symptoms;longitudinal;concern;correlation_results_2;0.6;365;1720;;0.53;health;other;single;exposure
+205;Shiloh;Adherence to COVID-19 Protective Behaviors: A Matter of Cognition or Emotion?;longitudinal;worry;correlation_results_2;0.66;90;422;41.99;0.49;health;virus;multiple;exposure
+27;Kuper-Smith;Risk perception and optimism during the early stages of the COVID-19 pandemic;longitudinal;risk;correlation_results_2;-0.2666;60;432;33.3;0.625;health;virus;multiple;exposure
+3;Caruso;The Cancer Worry Scale Revised for Breast Cancer Genetic Counseling;serial cross-sectional;worry;correlation_results_2;0.87;30;50;45.96;1;health;cancer;multiple;none
+42;Kaufman;Factor Structure and Stability of Smoking-Related Health Beliefs in the National Lung Screening Trial;longitudinal;worry;correlation_results_2;0.5;360;211;61.8;0.37;health;drug;multiple;none
+168;Kent;The relationship between perceived risk, thought intrusiveness and emotional well-being in women receiving counselling for breast cancer risk in a family history clinic;longitudinal;risk;correlation_results_3;0.79;90;49;36.8;1;health;cancer;multiple;intervention
+27;Kuper-Smith;Risk perception and optimism during the early stages of the COVID-19 pandemic;longitudinal;risk;correlation_results_3;-0.6188;60;432;33.3;0.625;health;virus;multiple;exposure
+42;Kaufman;Factor Structure and Stability of Smoking-Related Health Beliefs in the National Lung Screening Trial;longitudinal;risk;correlation_results_3;0.49;360;199;60.3;0.51;health;drug;multiple;none
+42;Kaufman;Factor Structure and Stability of Smoking-Related Health Beliefs in the National Lung Screening Trial;longitudinal;risk;correlation_results_4;0.56;360;199;60.3;0.51;health;drug;multiple;none
+42;Kaufman;Factor Structure and Stability of Smoking-Related Health Beliefs in the National Lung Screening Trial;longitudinal;worry;correlation_results_5;0.3;360;199;60.3;0.51;health;drug;multiple;none

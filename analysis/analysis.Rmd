@@ -1,9 +1,19 @@
 ---
-title: "analysis"
-author: "Amanda Holzer"
-date: "2024-06-23"
-output: html_document
+title: "Analysis"
+author: "Amanda Holzer, Arzie Bajrami, Alexandra Bagaïni, Rui Mata"
+date: "2024-06-25"
+output: 
+  html_document:
+    number_sections: yes
+    theme: cerulean
+    df_print: paged
+    code_folding: hide
+    toc: true
+    toc_float: true
+editor_options: 
+  chunk_output_type: console
 ---
+
 
 ```{r setup, include=FALSE}
 # PACKAGES ---------------------------------------------------------------
@@ -25,15 +35,23 @@ library(viridis)
 # PATH ---------------------------------------------------------------
 #set working directory
 setwd(here())
-here("data/final.csv")
+here("temp_riskperception")
 getwd()
 
 # DATA ---------------------------------------------------------------
 #Import the data set
-df_final <- read_csv(here("data", "final.csv"))
+df_final <- read_csv(here("data", "scoping_data.csv"))
+
 ```
 
-```{r}
+# Scoping Review
+
+This document visualizes the data for the scoping review.
+
+## Study Designs Across Domains
+
+This plot shows the number of studies using a longitudinal or serial cross-sectional design across several domains.s
+```{r, warning=FALSE}
 ### plot domains with study design
 ### Function to create a single horizontal bar plot for counts of 1
 create_combined_horizontal_bar <- function(df) {
@@ -63,9 +81,11 @@ create_combined_horizontal_bar <- function(df) {
 create_combined_horizontal_bar(df_final)
 ```
 
+## Measuring Risk Perception Across Domains
 
+This plot shows the number of studies and how many times they measured risk perception across several domains.
 
-```{r}
+```{r, warning=FALSE}
 ###plot domain with measurement points-----
 #create measurement category with 2, 3, and 3+
 df_final <- df_final %>%
@@ -100,9 +120,11 @@ create_combined_horizontal_bar(df_final)
 
 ```
 
+## Risk Formulation Across Domains
 
+This plot illustrates the different risk formulations used to measure risk perception across various domains.
 
-```{r}
+```{r, warning=FALSE}
 #kind of risk (risk, concern, worry)
 create_combined_horizontal_bar <- function(df) {
   columns_of_interest <- c('health', 'finance', 'political', 'crime', 'nature', 'nuclear', 'social')
@@ -120,17 +142,19 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_viridis_d(name = "Risk Categories")  # Use Viridis color palette and customize legend title
+    scale_fill_viridis_d(name = "Risk Formulation")  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
 create_combined_horizontal_bar(df_final)
 ```
 
+## Event Occurence Across Domains
+
+This plot shows the occurrence of events across various domains.
 
 
-
-```{r}
+```{r, warning=FALSE}
 
 # Define the function
 create_combined_horizontal_bar <- function(df) {
@@ -156,7 +180,7 @@ create_combined_horizontal_bar <- function(df) {
     theme(panel.grid = element_blank(), panel.border = element_blank(),
           axis.text.x = element_blank(), axis.title.x = element_blank()) +  # Remove x-axis labels and title
     labs(x = NULL, y = NULL, title = NULL) +  # Remove axis labels and change title
-    scale_fill_viridis_d(name = "Event Category", labels = c("No Event", "Event"))  # Use Viridis color palette and customize legend title
+    scale_fill_viridis_d(name = "Event Occurence", labels = c("No Event", "Event"))  # Use Viridis color palette and customize legend title
 }
 
 # Apply the function to df_final
@@ -166,8 +190,1408 @@ create_combined_horizontal_bar(df_final)
 
 
 
-#placeholder tabelle
-```{r}
+# Temporal Stability
+
+
+```{r, include=FALSE}
+# Set CRAN mirror (choose a mirror appropriate for your location)
+options(repos = c(CRAN = "https://cran.r-project.org"))
+
+# PACKAGES ---------------------------------------------------------------
+# install.packages("brms")
+# install.packages("cmdstanr", repos = c("https://mc-stan.org/r-packages/", getOption("repos")), dependencies = TRUE)
+# install.packages("loo")
+# install.packages("bayesplot")
+# install.packages("tidybayes")
+# install.packages("posterior")
+# install.packages("janitor")
+# install.packages("openxlsx")
+# install.packages("metafor")
+# install.packages("tidyverse")
+# install.packages("here")
+# install.packages("readxl")
+# install.packages("ggtext")
+
+library(tidyverse)
+library(brms)
+library(cmdstanr)
+library(loo)
+library(bayesplot)
+library(tidybayes)
+library(posterior)
+library(here)
+library(janitor)
+library(openxlsx)
+library(metafor)
+library(readxl)
+library(ggtext)
+
+# Function to install CmdStan (if needed)
+#cmdstanr::install_cmdstan()
+
+inv_logit <- function(x){plogis(x)}
+
+# PATH ---------------------------------------------------------------
+# set working directory
+setwd(here())
+getwd()
+
+# DATA ---------------------------------------------------------------
+# Prepare data file to get only relevant studies, i.e. studies with correlations
+df_prep <- read_csv("data/scoping_data.csv")
+
+# Cleaning columns names
+df_prep <- clean_names(df_prep)
+
+# Select relevant columns
+selected_columns <- select(df_prep, x1,author, paper_title, study_design, risk_1:risk_5, 
+                           intervention_yesno_1:intervention_yesno_5, temporal_analysis_1:temporal_analysis_5,
+                           exposure_yesno_1:exposure_yesno_5, health, nature, crime, finance, 
+                           nuclear, political, social, 
+                           correlation_results_1_1:correlation_results_1_8, correlation_results_1:correlation_results_5, 
+                           icc_results_1_1, test_retest_interval_1:test_retest_interval_5, 
+                           type_participants_1:type_participants_5, sample_category_1:sample_category_5, 
+                           age_category_1:age_category_5, country_1:country_5, sample_size_1:sample_size_5, 
+                           prop_female_1:prop_female_5, mean_age_1:mean_age_5, sd_age_1:sd_age_5)
+
+# Pivot the selected columns
+df_pivoted <- selected_columns %>%
+  mutate_all(as.character()) %>%
+  mutate_if(is.logical, as.character) %>%
+  mutate_if(is.double, as.character) %>%
+  pivot_longer(-c(,x1, author, paper_title, study_design),  # Columns to exclude from pivot
+               names_to = "var",
+               values_to = "val")
+
+# Filter out rows with NA values in the val column
+df_filtered <- df_pivoted %>%
+  filter(!is.na(val))
+
+filtered_rows <- df_filtered %>%
+  filter(var %in% paste0("temporal_analysis_", 1:5), val == 1)
+
+# Group by ID (x1) variable and keep only those groups where all temporal_analysis values have val = 1
+filtered_groups <- filtered_rows %>%
+  group_by(x1) %>%
+  filter(all(val == 1))
+
+# Keep only x1 rows that satisfy the condition
+df_filtered <- df_filtered %>%
+  filter(x1 %in% filtered_groups$x1)
+
+# Separate the var column into correlation_name and correlation_value
+df_cor_results <- df_filtered %>%
+  filter(str_detect(var, "correlation_results")) %>%
+  separate(var, into = c("cor_name"), sep = ":")%>%
+  rename(cor_val = val)
+
+df_interval <- df_filtered %>%
+  filter(str_detect(var, "test_retest_interval")) %>%
+  separate(var, into = c("interval_name"), sep = ":") %>%
+  rename(interval_val = val)%>%
+  select(-author, -paper_title, -study_design)
+
+# Add correlation interval
+cor_num <- gsub("correlation_results_", "", df_cor_results$cor_name)
+
+modified_interval_names <- paste0("test_retest_interval_", cor_num)
+
+df_cor_results$interval_name <- modified_interval_names
+
+df_cor <- merge(df_cor_results, df_interval, by = c("interval_name", "x1"), all.x = TRUE)
+
+df_cor <- df_cor %>% select(-interval_name)
+
+df_cor$cor_val <- as.numeric(df_cor$cor_val)
+
+#### The rest of the data such as risk formulation, interval, sample size, age, female percentage, domain, subdomain, multi/single item, and Intervention/exposure were manually entered from the raw data in Excel.
+
+## IMPORT CORRELATION FILE -----
+library(readr)
+
+df <- read_delim("data/masc_data.csv", 
+    delim = ";", escape_double = FALSE, trim_ws = TRUE)
+
+spec(df)
+
+
+## MEAN IMPUTATION FOR MISSING DATA -----
+# Age
+mean_age <- mean(df$age, na.rm=T)
+mean_age
+i_NA_age <- which(is.na(df$age) == TRUE)
+df$age[i_NA_age] <- mean_age
+mean_age == mean(df$age)
+
+# Female percentage
+mean_female <- mean(df$female, na.rm=T)
+mean_female
+i_NA_female <- which(is.na(df$female) == TRUE)
+df$female[i_NA_female] <- mean_female
+mean_female == mean(df$female)
+
+## MANIPULATE DATA --------
+mean(df$female, na.rm=T)
+mean(df$age, na.rm=T)
+df$interval_val <- df$interval_val/365
+plot(df$interval_val, df$cor_val)
+
+
+# Centering age and female percentage
+df <- df %>% mutate(cor_val = if_else(cor_val <0,0, cor_val), 
+                    age_dec_c = (age-40)/10,
+                    age_dec_c2 = age_dec_c^2,
+                    female_c = (female-0.50))
+
+df <- escalc(measure = "COR", ri=cor_val, ni=n, data=df)
+df$sei <- sqrt(df$vi)
+
+# Creating domain groups
+# health and other (social, political, crime, nature, finance)
+df <- df %>% mutate(domain = 
+                      case_when(domain %in% c("health") ~ "health",
+                                !domain %in% c("health") ~ "other"))
+
+# Creating event groups
+# none and event (intervention or exposure)
+df <- df %>% mutate(event = 
+                      case_when(event %in% c("none") ~ "none",
+                                !event %in% c("none") ~ "event"))
+
+# Using sum contrast coding
+sum_coding <- function(x, lvls = levels(x)) {
+  # codes the first category with -1
+  nlvls <- length(lvls)
+  stopifnot(nlvls > 1)
+  cont <- diag(nlvls)[, -nlvls, drop = FALSE]
+  cont[nlvls, ] <- -1
+  cont <- cont[c(nlvls, 1:(nlvls - 1)), , drop = FALSE]
+  colnames(cont) <- lvls[-1]
+  x <- factor(x, levels = lvls)
+  contrasts(x) <- cont
+  x
+}
+
+df <- df %>% 
+  mutate(domain = factor(domain),
+         domain = relevel(domain, ref="health"),
+         domain = sum_coding(domain, lvls = levels(domain))) %>% 
+  mutate(event = factor(event),
+         event = relevel(event, ref="none"),
+         event = sum_coding(event, lvls = levels(event))) %>% 
+  mutate(item= factor(item),
+         item = relevel(item, ref="multiple"),
+         item = sum_coding(item, lvls = levels(item))) %>%
+  mutate(formulation= factor(formulation),
+         formulation = relevel(formulation, ref="risk"),
+         formulation = sum_coding(formulation, lvls = levels(formulation)))
+
+# Tables and plots
+table(df$health_subdomain)
+table(df$event)
+table(df$item_c)
+
+df %>% ggplot(aes(x = age)) + geom_histogram()
+df %>% ggplot(aes(x = female)) + geom_histogram()
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point()
+
+
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_grid(.~ event)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ domain)
+df %>% ggplot(aes(x = interval_val, y = cor_val)) + geom_point() + facet_wrap(.~ item)
+```
+
+## Model Fitting and Evaluation - Meta-Analytical Stability and Change Model (MASC)
+### Model 1: Fitting with Correlation, Interval, and Size
+```{r, code_folding = 'hide', warning=FALSE}
+# Define family
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+formula_m1 <- bf(
+  cor_val | resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1,
+  logitchange ~ 1,
+  logitstabch ~ 1,
+  nl = TRUE
+)
+
+# Define the weakly informative priors
+priors <- 
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc_m1 <- brm(
+  formula = formula_m1,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+# Model summary
+summary(fit_masc_m1)
+
+# Plot conditional effects
+plot(conditional_effects(fit_masc_m1), points = TRUE)
+
+# Trace plots and parameter estimates
+plot(fit_masc_m1, N = 5, ask = TRUE)
+
+# Posterior predictive checks
+pp_check(fit_masc_m1, type = "dens_overlay", ndraws = 100)
+pp_check(fit_masc_m1, type = "stat", stat = "mean", ndraws = 1000, binwidth = .001)
+
+# LOO and diagnostics
+model_loo_m1 <- loo(fit_masc_m1, save_psis = TRUE, cores = 2)
+plot(model_loo_m1, diagnostic = "k")
+plot(model_loo_m1, diagnostic = "n_eff")
+
+```
+
+
+### Model 2a: Fitting with Demographics - Age, Age^2, Gender
+```{r, warning=FALSE}
+# Define family
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+formula_m2a <- bf(
+  cor_val | resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + age_dec_c + age_dec_c2  + female_c,
+  logitchange ~ 1 + age_dec_c + age_dec_c2 + female_c,
+  logitstabch ~ 1 + age_dec_c + age_dec_c2 + female_c,
+  nl = TRUE
+)
+
+# Define the weakly informative priors
+priors <- 
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc_m2a <- brm(
+  formula = formula_m2a,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+# Model summary
+summary(fit_masc_m2a)
+
+# Plot conditional effects
+plot(conditional_effects(fit_masc_m2a), points = TRUE)
+
+# Trace plots and parameter estimates
+plot(fit_masc_m2a, N = 5, ask = TRUE)
+
+# Posterior predictive checks
+pp_check(fit_masc_m2a, type = "dens_overlay", ndraws = 100)
+pp_check(fit_masc_m2a, type = "stat", stat = "mean", ndraws = 1000, binwidth = .001)
+
+# Leave-One-Out (LOO) and diagnostics
+model_loo_m2a <- loo(fit_masc_m2a, save_psis = TRUE, cores = 2)
+plot(model_loo_m2a, diagnostic = "k")
+plot(model_loo_m2a, diagnostic = "n_eff")
+
+```
+
+
+### Model 2b: Fitting with Measurement Characteristics - Domain, Item, Event
+```{r, warning=FALSE}
+# Define family
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+formula_m2b <- bf(
+  cor_val | resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + domain + item + event,
+  logitchange ~ 1 + domain + event,
+  logitstabch ~ 1 + domain + event,
+  nl = TRUE
+)
+
+# Define the weakly informative priors
+priors <- 
+  prior(normal(0,1), nlpar="logitrel", class = "b") +
+  prior(normal(0,1), nlpar="logitchange", class = "b") +
+  prior(normal(0,1), nlpar="logitstabch", class = "b") +
+  prior(cauchy(0,1), class = "sigma")
+
+# Fit the model
+fit_masc_m2b <- brm(
+  formula = formula_m2b,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+# Model summary
+summary(fit_masc_m2b)
+
+# Plot conditional effects
+plot(conditional_effects(fit_masc_m2b), points = TRUE)
+
+# Trace plots and parameter estimates
+plot(fit_masc_m2b, N = 5, ask = TRUE)
+
+# Posterior predictive checks
+pp_check(fit_masc_m2b, type = "dens_overlay", ndraws = 100)
+pp_check(fit_masc_m2b, type = "stat", stat = "mean", ndraws = 1000, binwidth = .001)
+
+# Leave-One-Out (LOO) and diagnostics
+model_loo_m2b <- loo(fit_masc_m2b, save_psis = TRUE, cores = 2)
+plot(model_loo_m2b, diagnostic = "k")
+plot(model_loo_m2b, diagnostic = "n_eff")
+
+```
+
+
+### Model 3: Fitting with Demographics and Measurement Characteristics - Domain, Item, Event, Formulation
+```{r, warning=FALSE}
+# Define the family
+family <- brmsfamily(
+  family = "student",
+  link = "identity"
+)
+
+# Define the formula
+formula_m3 <- bf(
+  cor_val | resp_se(sei, sigma = TRUE) ~ rel * (change * ((stabch^interval_val) - 1) + 1),
+  nlf(rel ~ inv_logit(logitrel)),
+  nlf(change ~ inv_logit(logitchange)),
+  nlf(stabch ~ inv_logit(logitstabch)),
+  logitrel ~ 1 + age_dec_c + age_dec_c2 + female_c + domain + item + event + formulation,
+  logitchange ~ 1 + age_dec_c + age_dec_c2 + female_c + domain + item + event + formulation,
+  logitstabch ~ 1 + age_dec_c + age_dec_c2 + female_c + domain + item + event + formulation,
+  nl = TRUE
+)
+
+# Define the weakly informative priors
+priors <- 
+  prior(normal(0, 1), nlpar = "logitrel", class = "b") +
+  prior(normal(0, 1), nlpar = "logitchange", class = "b") +
+  prior(normal(0, 1), nlpar = "logitstabch", class = "b") +
+  prior(cauchy(0, 1), class = "sigma")
+
+# Fit the model
+fit_masc_m3 <- brm(
+  formula = formula_m3,
+  prior = priors,
+  family = family,
+  data = df,
+  cores = 2,
+  chains = 2,
+  iter = 6000,
+  warmup = 2000,
+  control = list(max_treedepth = 10, adapt_delta = 0.95),
+  seed = 1299
+)
+
+# MODEL 3 EVAL: MCMC DIAGNOSTICS --------------------------------------------------------
+
+# Model summary
+summary(fit_masc_m3)
+
+# Plot conditional effects
+plot(conditional_effects(fit_masc_m3), points = T)
+
+# Trace plots & parameter estimates
+plot(fit_masc_m3, N = 5, ask = TRUE)
+
+# MODEL 3 EVAL: PP CHECKS --------------------------------------------------------
+pp_check(fit_masc_m3, type = "dens_overlay", ndraws = 100)
+
+pp_check(fit_masc_m3, type = "stat", stat = "mean", ndraws = 1000, binwidth = .001)
+
+pp_check(fit_masc_m3, type = "stat", stat = "sd", ndraws = 500, binwidth = .001)
+
+pp_check(fit_masc_m3, type = "stat", stat = "median", ndraws = 500, binwidth = .001)
+
+pp_check(fit_masc_m3, type = "stat", stat = "mad", ndraws = 500, binwidth = .001)
+
+pp_check(fit_masc_m3, type = "stat_2d")
+
+pp_check(fit_masc_m3, type = "scatter_avg")
+
+# MODEL 3 EVAL: LOO --------------------------------------------------------
+
+# LOO & Pareto K
+model_loo_m3 <- loo(fit_masc_m3, save_psis = TRUE, cores = 2)
+plot(model_loo_m3, diagnostic = "k")
+plot(model_loo_m3, diagnostic = "n_eff")
+
+# LOO PIT
+w <- weights(model_loo_m3$psis_object)
+ppc_loo_pit_overlay(
+  y = fit_masc_m3$data$cor_val,
+  yrep = posterior_predict(fit_masc_m3),
+  lw = w
+)
+ppc_loo_pit_qq(
+  y = fit_masc_m3$data$cor_val,
+  yrep = posterior_predict(fit_masc_m3),
+  lw = w
+)
+
+# MODEL EVAL: LOO - COMPARISON OF ALL MODELS ----------------------------------------------------
+loo1 <- loo(fit_masc_m1)
+loo2a <- loo(fit_masc_m2a)
+loo2b <- loo(fit_masc_m2b)
+loo3 <- loo(fit_masc_m3)
+
+loo_compare(loo1, loo2a, loo2b, loo3)
+
+```
+
+
+## Predictions Time
+
+### Plot correlation and interval
+```{r, warning=FALSE}
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= NA, 
+               event=NA,
+               formulation=NA,
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none",
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        legend.text = element_text(size = 9, color = "grey20"),
+        text = element_text(size = 9, color = "grey40"),
+        axis.text.y = element_text(vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text(hjust=c(0,1)),
+        title = element_text(size = 9, color = "grey20"),
+        plot.tag  = element_text(size = 11, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4)) +
+  scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a")) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill = guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5)) +
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+
+```
+
+
+### Plot correlation and interval by event
+```{r, warning=FALSE}
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= NA, 
+               event= unique(df$event),
+               formulation= NA,
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+# Set order and capitalise first letter
+epred_draws_df$event <- str_to_title(epred_draws_df$event)
+
+epred_draws_df$event<- factor(epred_draws_df$event, levels = c("None","Event"))
+
+df_plot <- df %>% 
+  mutate(event = str_to_title(event)) 
+
+df_plot$event<- factor(df_plot$event, levels = c("None","Event"))
+
+# Plot
+p_event <- ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df_plot, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~event) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 10, color = "grey20"),
+        text = element_text(size = 12, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 12, color = "grey20"),
+        plot.tag  = element_text( size = 12, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4),
+        strip.text = element_text(face = "bold"),
+        strip.text.y = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
+  scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a" ))+
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+
+
+p_event
+
+ggsave(plot = p_event,
+       filename = here::here("analysis", "masc_pred_event.jpeg"), 
+       dpi = 300, width = 28, height = 30, units = "cm")
+
+```
+
+
+### Plot correlation and interval by domain
+```{r, warning=FALSE}
+
+nd <- crossing(domain= unique(df$domain),  
+               sei = 0.1,
+               item= NA, 
+               event= NA,
+               formulation= NA,
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~str_to_title(domain)) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 10, color = "grey20"),
+        text = element_text(size = 12, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 12, color = "grey20"),
+        plot.tag  = element_text( size = 12, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4),
+        strip.text = element_text(face = "bold"),
+        strip.text.y = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
+  scale_fill_manual(values = c("#502a7b","#502a7c" , "#502a7a" )) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+
+
+```
+
+
+
+### Plot correlation and interval by item
+```{r, warning=FALSE}
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= unique(df$item), 
+               event= NA,
+               formulation= NA,
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+epred_draws_df  <- epred_draws_df  %>%
+  mutate(item = str_to_title(as.character(item)))
+
+
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~str_to_title(item)) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 10, color = "grey20"),
+        text = element_text(size = 12, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 12, color = "grey20"),
+        plot.tag  = element_text( size = 12, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4) ,
+        strip.text = element_text(face = "bold"),
+        strip.text.y = element_text(size = 12),
+        strip.text.x = element_text(size = 12))+ 
+  scale_fill_manual(values = c("#502a7b","#502a7c" , "#502a7a" )) +
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5)) +
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+
+```
+
+
+
+### Plot correlation and interval by formulation
+```{r, warning=FALSE}
+
+nd <- crossing(domain= NA,  
+               sei = 0.1,
+               item= NA, 
+               event= NA,
+               formulation= unique(df$formulation),
+               age_dec_c= 0,
+               age_dec_c2= 0,
+               female_c= 0, 
+               interval_val=seq(0,5, by = .1))
+
+
+epred_draws_df <- nd %>% 
+  add_epred_draws(fit_masc_m3, re_formula = NA)
+
+# epred_draws_dom <- epred_draws_df %>%
+#   group_by(interval_val, health_subdomain) %>%
+#   mean_hdci(.epred,.width = c(.95,.8,.5)) %>%
+#   pivot_wider(names_from = .width, values_from = c(.lower,.upper))
+
+
+# Set order and capitalise first letter
+epred_draws_df$formulation <- str_to_title(epred_draws_df$formulation)
+
+epred_draws_df$formulation<- factor(epred_draws_df$formulation, levels = c("Risk","Concern", "Worry" ,"Threat"))
+
+df_plot <- df %>% 
+  mutate(formulation = str_to_title(formulation)) 
+
+df_plot$formulation<- factor(df_plot$formulation, levels = c("Risk","Concern", "Worry" ,"Threat"))
+
+# Plot
+ggplot(epred_draws_df) +
+  stat_lineribbon(alpha = 1/4, point_interval = "mean_hdci", aes(x = interval_val, y = .epred)) + 
+  geom_point(data= df_plot, aes(x=interval_val, y= cor_val), size = 1.5, color = "grey20", alpha = 0.7) +
+  # geom_line(data = epred_draws_agg,
+  #           aes(x = time_diff_dec*10, y = .epred),
+  #           color = "grey95",
+  #           size = .5) +
+  # geom_line(data = epred_draws_dom, 
+  #           aes(x = time_diff_dec*10, y = .epred, linetype = domain_name),
+  #           color = "#e07f00",
+  #           linewidth = .25) +
+  # geom_text_repel(data = lbl_dot_df, 
+  #                 aes(x = time_diff_dec*10, y = .epred, label = label),
+  #                 family = "Source Sans 3", size = 2.5,
+  #                 min.segment.length = 0,
+  #                 segment.color = "grey50",
+  #                 segment.size = .25,
+  #                 box.padding = 0.5,
+  #                 nudge_x = .5,
+  #                 nudge_y = c(.1, -.05)
+  # ) +
+  facet_wrap(.~formulation) +
+  theme_minimal() +
+  labs(y = "Retest Correlation", x = "Retest Interval (Years)", color = "", linetype = "", fill = "",
+       title = "Behaviour") +
+  theme(strip.placement = "outside",
+        legend.position = "none", # c(0,0) bottom left, c(1,1) top-right.
+        legend.margin = margin(-.5,0,0,0, unit="cm"),
+        legend.spacing.y = unit(0.15, 'cm'),
+        legend.key.width = unit(1, "cm"),
+        legend.key.size = unit(.3, "cm"),
+        # plot.tag.position = c(0,.8),
+        legend.text = element_text(size = 10, color = "grey20"),
+        text = element_text(size = 12, color = "grey40"),
+        axis.text.y = element_text( vjust=seq(0,1, length.out = 5)),
+        axis.text.x = element_text( hjust=c(0,1)),
+        title = element_text(size = 12, color = "grey20"),
+        plot.tag  = element_text( size = 12, face = "bold", color = "grey20"),
+        panel.spacing = unit(.5, "lines"),
+        plot.title = element_blank(),
+        panel.grid = element_blank(),
+        plot.title.position = "plot",
+        plot.margin = margin(b = 5, r = 5, l = 5),
+        panel.background = element_rect(color = "grey75", fill = NA, size = .4),
+        strip.text = element_text(face = "bold"),
+        strip.text.y = element_text(size = 12),
+        strip.text.x = element_text(size = 12)) +
+  scale_fill_manual(values = c("#502a7b","#502a7c","#502a7a" ))+
+  guides(color = guide_legend(override.aes = list(size = .75)),
+         fill =  guide_legend(override.aes = list(size = .75)),
+         size = "none", linetype = guide_legend(override.aes = list(size = .75))) +
+  coord_cartesian(ylim = c(0, 1), xlim = c(0,5))+
+  scale_y_continuous(breaks = seq(0,1,0.25)) +
+  scale_x_continuous(breaks = c(0,1,2,3,4,5))
+
+```
+
+
+
+## Prediction Parameters 
+
+### By Domain
+```{r, warning=FALSE}
+
+pred_df_domain <- NULL
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= unique(df$domain),  
+                 sei = 0.1,
+                 item=NA, 
+                 event=NA,
+                 formulation=NA,
+                 age_dec_c=0,
+                 age_dec_c2=0,
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  
+  
+  fit_nlpar_domain <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA)    
+  
+
+ 
+  fit_nlpar_domain <- fit_nlpar_domain %>%
+    group_by(domain) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "domain",
+           x = domain)%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  pred_df <- fit_nlpar_domain
+  
+
+  pred_df_domain <- bind_rows(pred_df, pred_df_domain) 
+}
+
+
+
+pred_df_domain <- pred_df_domain %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+```
+
+
+
+### By Item
+```{r, warning=FALSE}
+
+pred_df_item <- NULL
+
+  
+  
+  for (curr_nlpar in c("stabch","rel","change")) {
+    
+    
+    nd <- crossing(domain= NA,  
+                   sei = 0.1,
+                   item= unique(df$item), 
+                   event=NA,
+                   formulation=NA,
+                   age_dec_c=0,
+                   age_dec_c2=0,
+                   female_c= 0, 
+                   interval_val=0)
+    
+    
+    fit_nlpar_item <- nd %>% 
+      add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+    
+
+  
+    
+    
+    fit_nlpar_item <- fit_nlpar_item %>%
+      group_by(item) %>% 
+      mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+      pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+      mutate(nlpar = curr_nlpar,
+             estimate = .epred,
+             categ = "item",
+             x = item)%>% 
+      select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+    
+    
+    
+    pred_df <- fit_nlpar_item
+    
+    
+    pred_df_item <- bind_rows(pred_df, pred_df_item) 
+  }
+  
+
+pred_df_item <- pred_df_item %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+```
+
+
+### By Event
+```{r, warning=FALSE}
+
+pred_df_event <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=unique(df$event),
+                 formulation=NA,
+                 age_dec_c=0,
+                 age_dec_c2=0,
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_event <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_event <- fit_nlpar_event %>%
+    group_by(event) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "event",
+           x = event)%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_event
+  
+  
+  pred_df_event <- bind_rows(pred_df, pred_df_event) 
+}
+
+pred_df_event <- pred_df_event %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+```
+
+
+### By Formulation
+```{r, warning=FALSE}
+
+pred_df_formulation <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA,
+                 formulation= unique(df$formulation),
+                 age_dec_c=0,
+                 age_dec_c2=0,
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_formulation <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_formulation <- fit_nlpar_formulation %>%
+    group_by(formulation) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "formulation",
+           x = formulation)%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_formulation
+  
+  
+  pred_df_formulation <- bind_rows(pred_df, pred_df_formulation) 
+}
+
+pred_df_formulation <- pred_df_formulation %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+```
+
+
+### By Age
+```{r, warning=FALSE}
+
+pred_df_age <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA,
+                 formulation=NA,
+                 age_dec_c= c(-2,0,2,4),
+                 age_dec_c2= c(4, 0, 4, 16),
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_age <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_age <- fit_nlpar_age %>%
+    group_by(age_dec_c) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "age",
+           x = case_when(age_dec_c== 4 ~ "80+", age_dec_c== 2 ~ "60-79", age_dec_c== 0 ~ "40-59", age_dec_c== -2 ~ "20-39"))%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_age
+  
+  
+  pred_df_age <- bind_rows(pred_df, pred_df_age) 
+}
+
+pred_df_age <- pred_df_age %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+```
+
+
+### By Gender
+```{r, warning=FALSE}
+
+pred_df_female <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA,
+                 formulation=NA,
+                 age_dec_c= 0,
+                 age_dec_c2= 0,
+                 female_c= c(-0.5, 0.5), 
+                 interval_val=0)
+  
+  
+  fit_nlpar_female <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_female <- fit_nlpar_female %>%
+    group_by(female_c) %>% 
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "gender",
+           x = ifelse(female_c== -0.5, "male", "female"))%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_female
+  
+  
+  pred_df_female <- bind_rows(pred_df, pred_df_female) 
+}
+
+pred_df_female <- pred_df_female %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+```
+
+
+### Overall
+```{r, warning=FALSE}
+
+pred_df_overall <- NULL
+
+
+
+for (curr_nlpar in c("stabch","rel","change")) {
+  
+  
+  nd <- crossing(domain= NA,  
+                 sei = 0.1,
+                 item= NA, 
+                 event=NA,
+                 formulation=NA,
+                 age_dec_c= 0,
+                 age_dec_c2= 0,
+                 female_c= 0, 
+                 interval_val=0)
+  
+  
+  fit_nlpar_overall <- nd %>% 
+    add_epred_draws(fit_masc_m3, nlpar = curr_nlpar, re_formula = NA) 
+  
+  
+  
+  
+  
+  fit_nlpar_overall <- fit_nlpar_overall %>%
+    mean_hdci(.epred,.width = c(.95,.8,.5)) %>% 
+    pivot_wider(names_from = .width, values_from = c(.lower,.upper)) %>% 
+    mutate(nlpar = curr_nlpar,
+           estimate = .epred,
+           categ = "all",
+           x = "overall")%>% 
+    select(categ, x, nlpar, estimate, dplyr::contains("er_"))
+  
+  
+  
+  pred_df <- fit_nlpar_overall
+  
+  
+  pred_df_overall <- bind_rows(pred_df, pred_df_overall) 
+}
+
+
+pred_df_overall <- pred_df_overall %>% 
+  mutate(nlpar = case_when(nlpar == "rel" ~ "Reliability",
+                           nlpar == "change" ~ "Change",
+                           nlpar == "stabch" ~"Stab. Change"))
+
+
+pred_df <- bind_rows(pred_df_domain, pred_df_item, pred_df_event, pred_df_formulation ,pred_df_age, pred_df_female, pred_df_overall)
+
+
+```
+
+
+
+## Parameters Table
+```{r, warning=FALSE}
+library(gt)
+
+# Selecting only the specified columns from pred_df
+pred_df_selected <- pred_df[, c("categ", "x", "nlpar", "estimate", ".lower_0.95", ".upper_0.95")]
+
+# Create a gt table
+table_gt <- gt(data = pred_df_selected,
+               rowname_col = "x",
+               caption = "Prediction Results",
+               rownames_to_stub = TRUE)
+
+# Formatting
+table_gt <- table_gt %>%
+  tab_header(title = "Estimates and Confidence Intervals") %>%
+  fmt_number(columns = c("estimate", ".lower_0.95", ".upper_0.95"), decimals = 3) %>%
+  cols_align(align = "center") 
+
+table_gt
+
+```
+
+
+## Parameters Plot
+```{r, warning=FALSE}
+
+pred_df <- pred_df %>%
+  mutate(categ = str_to_title(as.character(categ)),
+         x = str_to_title(as.character(x)))
+
+
+pred_df$nlpar <- factor(pred_df$nlpar, levels = c("Reliability", "Change", "Stab. Change"))
+
+
+pred_df$x <- factor(pred_df$x, levels = c("Overall", "None","Event", "Other", "Health",  "Single", "Multiple", "Threat", "Concern", "Worry", "Risk", "80+","60-79", "40-59", "20-39", "Male", "Female"))
+
+pred_df$categ <- factor(pred_df$categ, levels = c("All", "Event", "Domain",  "Item", "Formulation"  ,"Age", "Gender"))
+
+
+p_nlpar <- pred_df %>% ggplot() +
+  geom_crossbar(aes(xmin = .lower_0.95, x = estimate, 
+                    xmax = .upper_0.95, y = x),
+                fill = "white", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.95, x = estimate, 
+                    xmax = .upper_0.95, y = x),
+                fill = "#502a7a", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .3) +
+  geom_crossbar(aes(xmin = .lower_0.8, x = estimate,
+                    xmax = .upper_0.8, y = x),
+                fill = "white", color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.8, x = estimate,
+                    xmax = .upper_0.8, y = x),
+                fill = "#502a7a",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .6) +
+  geom_crossbar(aes(xmin = .lower_0.5, x = estimate, 
+                    xmax = .upper_0.5, y = x),
+                fill = "white",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  1) +
+  geom_crossbar(aes(xmin = .lower_0.5, x = estimate, 
+                    xmax = .upper_0.5, y = x),
+                fill = "#502a7a",color = "NA",
+                linewidth = .15,width = 0.25, alpha =  .9) +
+  geom_point(aes(x = estimate, y =x),
+             fill = "white", color = "grey20",
+             shape = 21, 
+             stroke = .25, 
+             size = 2) +
+  facet_grid(categ ~ nlpar, scales = "free_y", space = "free", switch = "y") + 
+  # scale_x_continuous(limits = c(0,1), expand = c(0,0)) +
+  scale_x_continuous(limits = c(0, 1), expand = c(0, 0), breaks = c(0, 0.5, 1), labels = c("0", "0.5", "1")) +
+  scale_y_discrete(position = "left") +
+  theme_minimal() +
+  geom_rect(data = subset(pred_df, x %in% c("Overall")), 
+            fill = NA, colour = "black", size = .75, xmin = -Inf,xmax = Inf,
+            ymin = -Inf,ymax = Inf) +
+  theme(panel.grid = element_blank(),
+        legend.position = "none",
+        plot.title.position = "plot",
+        strip.placement = "outside",
+        #strip.text.y = element_blank(),
+        axis.title.x = element_text(size = 10, color = "grey20"),
+        plot.margin = margin(b = 10, t = 10, r = 15, l = 0),
+        panel.spacing.x = unit(.3, "cm"),
+        # plot.tag.position = c(0.025,.9),
+        # panel.grid.major.x = element_line(linewidth = .2, color = "grey80", linetype = "solid"),
+        panel.background = element_rect(linewidth = .25, color = "grey50", fill = "NA"),
+        #plot.background = element_rect(linewidth = .25, color = "grey40", fill = "NA"),
+        strip.text =  element_text( face = "bold"),
+        strip.text.y = element_text(size = 10),
+        strip.text.x = element_text(size = 10),
+        plot.tag  = element_text( size = 10, face = "bold", color = "grey20"),
+        plot.title = element_blank(),
+        title = element_text( face = "bold", size = 10),
+        axis.text.x =  element_markdown( color = "black", size = 10, hjust=c(0,.5, 1)),
+        axis.text.y.left =  element_markdown( angle = 0, hjust = 1, color = "grey20", size = 10), # hjust = c(0,.5,.5,.5,1)
+        text = element_text()) +
+  labs(y = "", x = "Parameter Estimate", title = "Propensity") 
+
+
+p_nlpar
+
+ggsave(plot = p_nlpar,
+       filename = here::here("analysis", "masc_pred.jpeg"), 
+       dpi = 300, width = 28, height = 30, units = "cm") 
 
 ```
 

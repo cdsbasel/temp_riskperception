@@ -1,0 +1,61 @@
+﻿file;variable;explanation
+scoping_data;Journal;journal name
+scoping_data;Volume;volume of journal
+scoping_data;Issue;issue of journal
+scoping_data;Pages;pages of journal
+scoping_data;DOI;doi link 
+scoping_data;Abstract;abstract
+scoping_data;author;first author
+scoping_data;paper_title;title of the paper
+scoping_data;publication_year;publication year
+scoping_data;data_availability ;if data was available. OSF, panel data, upon request
+scoping_data;study_design;what kind of study design was used
+scoping_data;risk_1 to risk_5;risk perception formualtions used in the paper
+scoping_data;measurd_1 to measured_5;how risk perception was measured
+scoping_data;units_assessed_1 to units_assessed_5;what units were used to measure risk perception, e.g. likert scale
+scoping_data;item_number_1 to item_number_5;how many items were used to measure risk perception
+scoping_data;times_measured_1 to times_measured_5;how many times risk perception was measured
+scoping_data;study_1 to study_5;which study was relevant, e.g. single if it was only one study.
+scoping_data;intervention_yesno_1 to intervention_yesno_5;was there an intervention
+scoping_data;exposure_yesno_1 to exposure_yesno_5;was there an exposure
+scoping_data;domain;all of the domains
+scoping_data;health;1=yes, 0=no
+scoping_data;nature;1=yes, 0=no
+scoping_data;crime;1=yes, 0=no
+scoping_data;finance;1=yes, 0=no
+scoping_data;nuclear;1=yes, 0=no
+scoping_data;political;1=yes, 0=no
+scoping_data;social;1=yes, 0=no
+scoping_data;temporal_analysis_1 to temporal_analysis_5;if they analyzed temporal stability, 1=yes, 0=no
+scoping_data;how_analyzed_1 to how_analyzed_5;what kind of analysis performed
+scoping_data;correlation_results_1 to correlation_results_5;correlation value if reported
+scoping_data;ICC_results_1 to ICC_results_1.1;ICC value
+scoping_data;temporal_trend_result_1 to temporal_trend_result_5;if the analysis was significant or not
+scoping_data;mean_difference_result_1 to mean_difference_result_5;if the analysis was significant or not
+scoping_data;test-retest_interval_1 to test-retest_interval_5;interval in days
+scoping_data;temporal_trend_interval_1 to temporal_trend_interval_5;interval in days
+scoping_data;mean_difference_interval_1 to mean_difference_interval_5;interval in days
+scoping_data;type_participants_1 to type_participants_5;laypeople or experts
+scoping_data;sample_category_1 to sample_category_5;sample characteristics, e.g. students
+scoping_data;age_category_1 to age_category_5;age category
+scoping_data;country_1 to country_5;country data is from
+scoping_data;sample_size_1 to sample_size_5;sample size
+scoping_data;prop_female_1 to prop_female_5;proportion of female participants
+scoping_data;mean_age_1 to mean_age_5;mean age in years
+scoping_data;SD_age_1 to SD_age_5;standard deviation of mean age in years
+scoping_data;lowest_age_1 to lowest_age_5;lowest age in years
+scoping_data;highest_age_1 to highest_age_5;highest age in years
+scoping_data;health_sub_1 to helath_sub_2;health subdomain
+masc_data;author;first author
+masc_data;paper_title;title of the paper
+masc_data;study_design;what kind of study design was used
+masc_data;formulation;risk perception formualtions used in the paper
+masc_data;cor_name;which correlation if there were multiple
+masc_data;interval_val;interval in days
+masc_data;n;sample size
+masc_data;age;mean age in years
+masc_data;female;proportion of female participants
+masc_data;domain;domain
+masc_data;health_subdomain;health subdomain
+masc_data;item;how many items were used, e.g. single or multiple
+masc_data;event;if any event (intervention or exposure) occured, e.g. none or event
