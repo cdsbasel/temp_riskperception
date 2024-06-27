@@ -15,6 +15,7 @@ editor_options:
 ---
 
 
+
 ```{r setup, include=FALSE}
 # PACKAGES ---------------------------------------------------------------
 #load packages 
@@ -188,6 +189,14 @@ create_combined_horizontal_bar(df_final)
 
 ```
 
+
+## Demographics Table Placeholder
+
+Participant characteristics and demographics.
+
+```{r, warning=FALSE}
+#Table
+```
 
 
 # Temporal Stability
